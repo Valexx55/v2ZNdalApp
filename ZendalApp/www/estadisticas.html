@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<!--
+    Licensed to the Apache Software Foundation (ASF) under one
+    or more contributor license agreements.  See the NOTICE file
+    distributed with this work for additional information
+    regarding copyright ownership.  The ASF licenses this file
+    to you under the Apache License, Version 2.0 (the
+    "License"); you may not use this file except in compliance
+    with the License.  You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing,
+    software distributed under the License is distributed on an
+    "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+     KIND, either express or implied.  See the License for the
+    specific language governing permissions and limitations
+    under the License.
+-->
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <!--
+        Customize this policy to fit your own app's needs. For more guidance, see:
+            https://github.com/apache/cordova-plugin-whitelist/blob/master/README.md#content-security-policy
+        Some notes:
+            * gap: is required only on iOS (when using UIWebView) and is needed for JS->native communication
+            * https://ssl.gstatic.com is required only on Android and is needed for TalkBack to function properly
+            * Disables use of inline scripts in order to mitigate risk of XSS vulnerabilities. To change this:
+                * Enable inline JS: add 'unsafe-inline' to default-src
+        -->
+  <meta name="format-detection" content="telephone=no">
+  <meta name="msapplication-tap-highlight" content="no">
+  <meta name="viewport" content="initial-scale=1, width=device-width, viewport-fit=cover">
+  <meta name="color-scheme" content="light dark">
+  <link rel="stylesheet" href="css/index.css">
+  <title>Hello World</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@2.8.0"></script>
+  <script type="module" src="https://cdn.jsdelivr.net/npm/@ionic/core/dist/ionic/ionic.esm.js"></script>
+  <script nomodule src="https://cdn.jsdelivr.net/npm/@ionic/core/dist/ionic/ionic.js"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@ionic/core/css/ionic.bundle.css" />
+  <link rel="stylesheet" href="css/global.css" />
+  <style>
+    .searchbar-input.sc-ion-searchbar-md {
+      text-transform: initial;
+    }
+
+    #listalocalidades,
+    #listazbs {
+      height: 0;
+      overflow: scroll;
+    }
+
+    #card-estadisticas-localidades,
+    #card-estadisticas-zbs {
+      overflow: scroll;
+      height: calc(100vh - 316px);
+    }
+  </style>
+  <script type="module">
+    import { menuController } from 'https://cdn.jsdelivr.net/npm/@ionic/core/dist/ionic/index.esm.js';
+    import { alertController } from 'https://cdn.jsdelivr.net/npm/@ionic/core/dist/ionic/index.esm.js';
+    window.menuController = menuController;
+    window.alertController = alertController;
+  </script>
+</head>
+
+<body>
+  <ion-app>
+    <ion-menu side="start" content-id="main-content">
+      <ion-header>
+        <ion-toolbar color="medium">
+          <ion-title>Menú</ion-title>
+        </ion-toolbar>
+      </ion-header>
+      <ion-content>
+        <ion-list>
+          <ion-item>
+            <ion-icon name="map-outline" slot="start"></ion-icon>
+            <ion-label onclick="cambiaPagina('index.html')">Mapas</ion-label>
+          </ion-item>
+          <ion-item>
+            <ion-icon name="locate-outline" slot="start"></ion-icon>
+            <ion-label onclick="cambiaPagina('mizona.html')">Mi Zona</ion-label>
+          </ion-item>
+          <ion-item>
+            <ion-icon name="stats-chart-outline" slot="start"></ion-icon>
+            <ion-label onclick="cambiaPagina('estadisticas.html')">Estadísticas</ion-label>
+          </ion-item>
+          <ion-item>
+            <ion-icon name="git-compare-outline" slot="start"></ion-icon>
+            <ion-label onclick="cambiaPagina('comparativa.html')">Comparar zonas</ion-label>
+          </ion-item>
+          <ion-item>
+            <ion-icon name="eyedrop-outline" slot="start"></ion-icon>
+            <ion-label onclick="cambiaPagina('datosvacunacion.html')">Datos Vacunación</ion-label>
+          </ion-item>
+          <ion-item>
+            <ion-icon name="thermometer-outline" slot="start"></ion-icon>
+            <ion-label onclick="cambiaPagina('autotest.html')">Auto Test</ion-label>
+          </ion-item>
+          <ion-item>
+            <ion-icon name="newspaper-outline" slot="start"></ion-icon>
+            <ion-label onclick="cambiaPagina('noticias.html')">Noticias</ion-label>
+          </ion-item>
+          <ion-item>
+            <ion-icon name="people-outline" slot="start"></ion-icon>
+            <ion-label onclick="cambiaPagina('creditos.html')">Créditos</ion-label>
+          </ion-item>
+          <ion-item>
+            <ion-icon name="exit-outline" slot="start"></ion-icon>
+            <ion-label onclick="cambiaPagina('salir')">Salir</ion-label>
+          </ion-item>
+        </ion-list>
+      </ion-content>
+    </ion-menu>
+
+    <div class="ion-page" id="main-content">
+      <ion-header>
+        <ion-toolbar color="danger">
+          <ion-buttons slot="start">
+            <ion-menu-button></ion-menu-button>
+          </ion-buttons>
+          <ion-title class="tituloapp">Zendal APP</ion-title>
+        </ion-toolbar>
+        <ion-toolbar class="subtitulo">
+          <ion-icon name="arrow-back-outline" style="zoom:2.0;" slot="start" onclick="botonHaciaAtras()"></ion-icon>
+          <ion-icon name="stats-chart-outline" style="zoom:2.0;" slot="start"></ion-icon>
+          <ion-title class="subtitulo">Estadísticas</ion-title>
+        </ion-toolbar>
+      </ion-header>
+      <ion-content class="ion-padding">
+
+        <ion-tabs id="iontabpadre">
+
+          <ion-tab tab="tasa-incidencia-municipios">
+            <ion-nav>
+              <ion-item>
+                <ion-label>Fecha de informe</ion-label>
+                <ion-select id="listaFecha">
+                </ion-select>
+              </ion-item>
+
+              <ion-searchbar id="sblocalidad" placeholder="Localidad"></ion-searchbar>
+              <ion-list id="listalocalidades">
+              </ion-list>
+
+              <ion-card id="card-estadisticas-localidades">
+                <canvas id="myChart"></canvas>
+                <ion-card-header>
+                  <ion-card-title id="tituloLocalidad"></ion-card-title>
+                  <ion-card-subtitle id="tituloFecha"></ion-card-subtitle>
+                </ion-card-header>
+                <ion-card-content id="datos">
+                </ion-card-content>
+              </ion-card>
+            </ion-nav>
+          </ion-tab>
+          <ion-tab tab="tasa-incidencia-zbs">
+            <ion-nav>
+              <ion-item>
+                <ion-label>Fecha de informe</ion-label>
+                <ion-select id="listaFechaZbs">
+                </ion-select>
+              </ion-item>
+
+              <ion-searchbar id="sbzbs" placeholder="Zona Básica de Salud"></ion-searchbar>
+              <ion-list id="listazbs">
+              </ion-list>
+
+              <ion-card id="card-estadisticas-zbs">
+                <canvas id="myChartZBS"></canvas>
+                <ion-card-header>
+                  <ion-card-title id="tituloZBS"></ion-card-title>
+                  <ion-card-subtitle id="tituloFechaZBS"></ion-card-subtitle>
+                </ion-card-header>
+                <ion-card-content id="datosZBS">
+                </ion-card-content>
+              </ion-card>
+            </ion-nav>
+          </ion-tab>
+          <ion-tab-bar slot="bottom" color="danger">
+            <!--programado el callback en los tres partes del tab si no, no lo coge-->
+            <ion-tab-button tab="tasa-incidencia-municipios">
+              <ion-icon name="business-outline"></ion-icon>
+              <ion-label>Localidad</ion-label>
+            </ion-tab-button>
+
+            <ion-tab-button tab="tasa-incidencia-zbs">
+              <ion-icon name="fitness-outline"></ion-icon>
+              <ion-label>ZBS</ion-label>
+            </ion-tab-button>
+          </ion-tab-bar>
+        </ion-tabs>
+      </ion-content>
+    </div>
+  </ion-app>
+
+  <script src="cordova.js"></script>
+  <script src="js/index.js"></script>
+  <script src="js/estadisticas.js"></script>
+  <script>
+
+    //BUG ERROR CURIOSÍSIMO EN ONCLICK SOBRE EL TAB. DEJA DE FUNCIONAR TRAS TOCAR VARIAS VECES
+
+    let iontab = document.getElementById("iontabpadre");
+    iontab.addEventListener('ionTabsWillChange', cambioTab);
+
+    async function cambioTab() {
+      //alert ("va a cambiar de tab");
+      let nombretab = await iontab.getSelected();
+      //alert ("nombre tab " + nombretab);
+      let eszbs = (nombretab == "tasa-incidencia-zbs");
+      tabTocada(eszbs);
+
+
+    }
+
+
+    let botonesTab = null;
+    const COLOR_BTN_PULSADO = "secondary";
+    const COLOR_BTN_NO_PULSADO = "light";
+
+    botonesTab = document.getElementsByTagName("ion-tab-button");
+    for (let i = 0; i < botonesTab.length; i++) {
+      botonesTab[i].setAttribute("onclick", `btnColor(${i})`);
+    }
+
+    btnColor(0);
+
+    function btnColor(btnPulsado) {
+
+      let hijos = null;
+
+      for (let i = 0; i < botonesTab.length; i++) {
+        hijos = botonesTab[i].childNodes;
+        for (let j = 0; j < hijos.length; j++) {
+          if (hijos[j].nodeType == Node.ELEMENT_NODE) {
+            if (i == btnPulsado) {
+              hijos[j].setAttribute("color", COLOR_BTN_PULSADO);
+            } else {
+              hijos[j].setAttribute("color", COLOR_BTN_NO_PULSADO);
+            }
+          }
+        }
+      }
+    }
+
+
+  </script>
+
+</body>
+
+</html>

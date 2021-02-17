@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html>
+
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zendal APP</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@2.8.0"></script>
+    <script type="module" src="https://cdn.jsdelivr.net/npm/@ionic/core/dist/ionic/ionic.esm.js"></script>
+    <script nomodule src="https://cdn.jsdelivr.net/npm/@ionic/core/dist/ionic/ionic.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@ionic/core/css/ionic.bundle.css" />
+    <link rel="stylesheet" href="css/global.css" />
+     <script type="module">
+      import { menuController } from 'https://cdn.jsdelivr.net/npm/@ionic/core/dist/ionic/index.esm.js';
+      import { alertController } from 'https://cdn.jsdelivr.net/npm/@ionic/core/dist/ionic/index.esm.js';
+      window.menuController = menuController;
+      window.alertController = alertController;
+    </script>
+
+</head>
+
+<body>
+
+    <ion-app>
+      <ion-menu side="start" content-id="main-content">
+        <ion-header>
+          <ion-toolbar color="medium">
+            <ion-title>Menú</ion-title>
+          </ion-toolbar>
+        </ion-header>
+        <ion-content>
+          <ion-list>
+            <ion-item>
+              <ion-icon name="map-outline" slot="start"></ion-icon>
+              <ion-label onclick="cambiaPagina('index.html')">Mapas</ion-label>
+            </ion-item>
+            <ion-item>
+              <ion-icon name="locate-outline" slot="start"></ion-icon>
+              <ion-label onclick="cambiaPagina('mizona.html')">Mi Zona</ion-label>
+            </ion-item>
+            <ion-item>
+              <ion-icon name="stats-chart-outline" slot="start"></ion-icon>
+              <ion-label onclick="cambiaPagina('estadisticas.html')">Estadísticas</ion-label>
+            </ion-item>
+            <ion-item>
+              <ion-icon name="git-compare-outline" slot="start"></ion-icon>
+              <ion-label onclick="cambiaPagina('comparativa.html')">Comparar zonas</ion-label>
+            </ion-item>
+            <ion-item>
+              <ion-icon name="eyedrop-outline" slot="start"></ion-icon>
+              <ion-label onclick="cambiaPagina('datosvacunacion.html')">Datos Vacunación</ion-label>
+            </ion-item>
+            <ion-item>
+              <ion-icon name="thermometer-outline" slot="start"></ion-icon>
+              <ion-label onclick="cambiaPagina('autotest.html')">Auto Test</ion-label>
+            </ion-item>
+            <ion-item>
+              <ion-icon name="newspaper-outline" slot="start"></ion-icon>
+              <ion-label onclick="cambiaPagina('noticias.html')">Noticias</ion-label>
+            </ion-item>
+            <ion-item>
+              <ion-icon name="people-outline" slot="start"></ion-icon>
+              <ion-label onclick="cambiaPagina('creditos.html')">Créditos</ion-label>
+            </ion-item>
+            <ion-item>
+              <ion-icon name="exit-outline" slot="start"></ion-icon>
+              <ion-label onclick="cambiaPagina('salir')">Salir</ion-label>
+            </ion-item>
+          </ion-list>
+        </ion-content>
+      </ion-menu>
+      
+
+
+        <div class="ion-page" id="main-content">
+            <ion-header>
+                <ion-toolbar color="danger">
+                    <ion-buttons slot="start">
+                        <ion-menu-button></ion-menu-button>
+                    </ion-buttons>
+                    <ion-title class="tituloapp">Zendal APP</ion-title>
+                </ion-toolbar>
+                <ion-toolbar class="subtitulo">
+                    <ion-icon name="arrow-back-outline" style="zoom:2.0;" slot="start" onclick="botonHaciaAtras()"></ion-icon>
+                    <ion-icon name="locate-outline" style="zoom:2.0;" slot="start"></ion-icon>
+                    <ion-title class="subtitulo">Mi Zona</ion-title>
+                </ion-toolbar>
+            </ion-header>
+            <ion-content class="ion-padding">
+
+
+                <!-- <ion-content fullscreen> -->
+                <ion-card text-center>
+                    <!-- <img src="./madison.jpg" /> -->
+                    <ion-card-header>
+                        <ion-card-subtitle>
+                            Elija su distrito/municipio y su zona básica de salud y se usarán en Estadísticas y Comparar Zonas como predeterminados.
+                        </ion-card-subtitle>
+                        <!-- <ion-card-title>Madison, WI</ion-card-title> -->
+                    </ion-card-header>
+
+
+                    <ion-card-content>
+                        <div>
+                            <p>Datos actuales:</p>
+                            <div id="zonasActuales"></div>
+                        </div>
+                    </ion-card-content>
+
+
+                    <ion-row>
+                        <ion-col style="text-align: center">
+                            <img src="./img/cityscape.png" style="height: 100px;" />
+                        </ion-col>
+                    </ion-row>
+
+                    </ion-card-content>
+                    <ion-list>
+                        <ion-item>
+                            <ion-label>Distrito/Municipio</ion-label>
+                            <ion-select ok-text="Ok" cancel-text="Cancelar" id="municipios">
+                            </ion-select>
+                        </ion-item>
+                    </ion-list>
+
+                    <ion-row>
+                        <ion-col style="text-align: center">
+                            <img src="./img/hospital.png" style="height: 100px;" />
+                        </ion-col>
+                    </ion-row>
+
+                    <ion-list>
+                        <ion-item>
+                            <ion-label>ZBS</ion-label>
+                            <ion-select ok-text="Ok" cancel-text="Cancelar" id="zbs">
+                            </ion-select>
+                        </ion-item>
+                    </ion-list>
+
+
+                    <ion-row>
+                        <ion-col style="text-align: center">
+                            <ion-button color="success" id="boton">Fijar Zona</ion-button>
+                        </ion-col>
+                    </ion-row>
+
+                </ion-card>
+            </ion-content>
+    </ion-app>
+    <script src="cordova.js"></script>
+  <script src="js/index.js"></script>
+  <script src="js/mizona.js"></script>
+
+</body>
+
+
+
+</html>
