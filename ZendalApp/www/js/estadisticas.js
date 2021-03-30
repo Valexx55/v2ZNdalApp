@@ -28,6 +28,8 @@ let lista_zbs = document.getElementById("listazbs");
 let pvlocalidad = true;
 let pvzbs = true;
 
+//let lc;
+
 //caso especial, la primera vez que entramos, además de obtener los datos
 //hay que recoger la zbs y / o localidad favorita
 //esta fucion se invoca en onload, antes de que se produzca la detección del tab
@@ -270,8 +272,22 @@ function obtenerFechas(datosjson) {
     return listado_fechas_unico;
 }
 
-function obtenerDatos() {
+let mostrandolc = false;
+let dzbsr = false;//datos de zona basica de salud recuperados
+let dlr = false;//datos de localidad recuperados
+
+async function obtenerDatos() {
     //alert("llamando a obtener datos");
+      //mostramos espera solo si no hemos recuperado los datos
+      if ((tabzbs&&!dzbsr)||(!tabzbs&&!dlr))
+      {
+        lc = await loadingController.create({
+            message: 'Cargando...'
+        });
+        await lc.present();
+        mostrandolc=true;
+      }
+      
     fetch(url_datos)
         .then(response => {
             if (response.ok) {
@@ -301,7 +317,7 @@ function obtenerDatos() {
                                     pintar(fecha_sel, zona_sel);
                                 }
                             }
-
+                            dzbsr = true;//hemos recuperado los datos de las zbs al menos una vez
                         }
                         else {
                             if (pvlocalidad) {//primera vez en zbs
@@ -313,38 +329,18 @@ function obtenerDatos() {
                                 }
                             }
 
+                            dlr = true;////hemos recuperado los datos de las localidades al menos una vez
                         }
+                        if (mostrandolc) {lc.dismiss();  mostrandolc=false;}//si se estaba mostrando la espera, se quita
 
-                        //si hay zona favorita 
-                        //y no tenía pintado nada
-
-                        //SI ESTOY EN TAB DE LOCALIDADES
-                        //SI HABÍA BUSQUEDA PREVIA
-                        //LA RESPETO Y NO TOCO NADA
-                        //SI NO, SI HAY LOCALIDAD FAVORITA
-                        //LA PINTO
-                        //SI NO, SI ESTOY EN ZBS
-                        //SI HABÍA BUSQUEDA PREVIA
-                        //OBSERVACIÓN DE ERNESTO
-                        //CUANDO VUELVES A LA TAB QUE NO SE CARGUE LA FAVORITA
-                        //SI NO QUE SE RESPESTE LA ANTERRIOS
-
-                        /*  if (zona_sel != null) {
-                              //ya seleccionó una
-                              //no hago nada
-                          } else {
-                              if (zona_favorita != null) {
-                                  zona_sel = zona_favorita;
-                                  searchbar.value = zona_favorita;
-                                  pintar(fecha_sel, zona_sel);
-                              }
-                          }*/
+                       
 
                     });
             } else {
+                if (mostrandolc) {lc.dismiss(); mostrandolc=false;}
                 mostrarToast();
             }
-        }).catch(error => mostrarToast());
+        }).catch(error => {if (mostrandolc) {lc.dismiss(); mostrandolc=false;}mostrarToast();});
 }
 function dibujarGrafico(ejexFechas, ejeyTIA) {
     //OBTENERLOS DATOS

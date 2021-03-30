@@ -10,6 +10,7 @@ let datos_cam;
 let fechas;
 let localidad1, localidad2;
 let TIA1, TIA2;
+let lc;
 
 function formatFecha(fecha) {
     let fechaDDMMAAAA;
@@ -71,10 +72,15 @@ function localidadesSeleccionadas() {
 
 function getMiLocalidad() {
 
-    let miLocalidad;
+    let miLocalidad=null;
+    let jsonlocalidad;
     
-    miLocalidad = JSON.parse(localStorage.getItem('covidCAM_municipio'));
-    return miLocalidad.municipio;
+    jsonlocalidad = JSON.parse(localStorage.getItem('covidCAM_municipio'));
+    if (jsonlocalidad!=null) //el fallito de la sb. accede a un objeto suponinedo que hay un favorito
+    {
+        miLocalidad = jsonlocalidad.municipio;
+    }
+    return miLocalidad;
  
 }
 
@@ -98,7 +104,14 @@ function mostrarIonSelectLocalidades(array_localidades) {
 
 }
 
-function cargaDatos() {
+async function cargaDatos() {
+
+    //mostramos espera
+    lc = await loadingController.create({
+        message: 'Cargando...'
+    });
+    await lc.present();
+
     fetch("https://datos.comunidad.madrid/catalogo/dataset/7da43feb-8d4d-47e0-abd5-3d022d29d09e/resource/877fa8f5-cd6c-4e44-9df5-0fb60944a841/download/covid19_tia_muni_y_distritos_s.json")
         .then(response => {
             if (response.ok) {
@@ -111,12 +124,14 @@ function cargaDatos() {
                     fechas = obtenerFechas(datosjson);
                     mostrarIonSelectLocalidades(array_localidades);
                     //fechas = fechas.reverse();
+                    lc.dismiss();
                 })
             } else {
+                lc.dismiss();
                 mostrarToast();
             }
         })
-    .catch(error => mostrarToast());
+    .catch(error => { lc.dismiss();mostrarToast();});
 }
 
 //function dibujarGrafico(ejexFechas, ejeyTIA) {

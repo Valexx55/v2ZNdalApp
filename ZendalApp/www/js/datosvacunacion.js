@@ -1,14 +1,20 @@
+
 this.onload = carga;
+//30-3 VAL correciones a lo que era un serio candidato al BOMBAY DECADE CODE AWARD
+
+const URL_GRAFICOS_MADRID = "https://raw.githubusercontent.com/civio/covid-vaccination-spain/main/data.csv";
+const POBLACION_MADRID = 6779888;
+const POBLACION_ESPANIA = 47329000;
+var lc;
+
 
 function carga() {
 
-    //muestra spinner 'Cargandoo...' mientras se abre la pagina
-    presentLoading();
 
-    //funcion que recoge los datos del github de la web de civio para pintar las graficas de los datos
-    //de la comunidad de madrid
-    //https://raw.githubusercontent.com/civio/covid-vaccination-spain/main/data.csv
+    //obtenerDatosCVSParseadosEnArray();
     parseaGraficosCSVMadrid();
+
+
 
 }
 
@@ -19,62 +25,82 @@ async function openMenu() {
 
 }
 
-//necesario para que funcione el spiner de carga de la pagina
-async function presentLoading() {
 
-    const loading = await loadingController.create({
-        message: 'Cargando...',
-        duration: 500
-    });
-
-    await loading.present();
-}
 
 // --------------------- ACCESO A DATOS ---------------------------------//
 
+function limpiarYParsearNumeros(array_datos_parseado) {
+    array_datos_parseado.shift();//eliminamos la primera posición, que son nombres de columnas
+    array_datos_parseado = array_datos_parseado.map(registro => registro.map(function callback(currentValue, index, array) {
+        // Elemento devuelto de nuevo_array
+        if (index != 1 && index != 7 && index != 9) {
+            if (currentValue.indexOf(".") != -1) {
+                //tiene un punto y es posición de número
+                currentValue = currentValue.replaceAll(".", "");
+            }
+        }
+        return currentValue;
+    }));
+    return array_datos_parseado
 
-// URL del csv de la pagina de civio para pintar los graficos de datos de vacunacion de Madrid
-const URL_GRAFICOS_MADRID = "https://raw.githubusercontent.com/civio/covid-vaccination-spain/main/data.csv";
+}
+function mostrarSeccionEspania(array_datos_parseado) {
+    let datosTotales = [];
+    datosTotales = array_datos_parseado.filter(item => item[1].localeCompare('Totales') == 0);//FILTRAMOS SOLO LOS DATOS DE TOTAL
+    let ultimos_datos_Espania = datosTotales[datosTotales.length - 1];//OBTENEMOS EL ÚLTIMO REGISTRO DE TOTALES
+    let ultimos7_datos_Espania = datosTotales.slice(datosTotales.length - 1 - 7, datosTotales.length);//OBTENEMOS LOS 7 ÚLTIMOS REGISTRO DE TOTALES
+    let ultimas7_fechas_Espania = ultimos7_datos_Espania.map(registro => registro[0]);//OBTENEMOS LAS 7 ÚLTIMAS FECHAS DE TOTALES
 
+    muestraDatosVacunaEspanaDosPuntoCero(ultimos_datos_Espania);
 
+    dibujarGraficoDosisEntregadasEspana(ultimos7_datos_Espania, ultimas7_fechas_Espania);
+    dibujarGraficoDosisAdministradasEspana(ultimos7_datos_Espania, ultimas7_fechas_Espania);
+    dibujarGraficoInmunesEspana(ultimos7_datos_Espania, ultimas7_fechas_Espania);
+}
+function mostrarSeccionMadrid(array_datos_parseado) {
+    //---- SLIDE 1 -----  
+    let datosMadrid = [];
+    datosMadrid = array_datos_parseado.filter(item => item[1].localeCompare('Madrid') == 0);//FILTRAMOS SOLO LOS DATOS DE MADRID
+    let ultimos_datos_Madrid = datosMadrid[datosMadrid.length - 1];//OBTENEMOS LOS ÚLTIMOS DATOS DE MADRID
+    let ultimos7_datos_madrid = datosMadrid.slice(datosMadrid.length - 1 - 7, datosMadrid.length);
+    let ultimas7_fechas_Madrid = ultimos7_datos_madrid.map(registro => registro[0]);//OBTENEMOS LAS 7 ÚLTIMAS FECHAS DE MADRID   
+    muestraDatosVacunaMadridDosPuntoCero(ultimos_datos_Madrid);
 
+    dibujarGraficoMadridRecibidas(ultimos7_datos_madrid, ultimas7_fechas_Madrid);
+    dibujarGraficoMadridAdministradas(ultimos7_datos_madrid, ultimas7_fechas_Madrid);
+    dibujarGraficoMadridPautaCompleta(ultimos7_datos_madrid, ultimas7_fechas_Madrid);
+
+}
 // coge el csv de la pagina de civio para pintar los graficos de datos de vacunacion de Madrid
-function parseaGraficosCSVMadrid() {
+async function parseaGraficosCSVMadrid() {
 
-    console.log("parseaGraficosCSVMadrid");
+    //mostramos espera
+    lc = await loadingController.create({
+        message: 'Cargando...'
+    });
+    await lc.present();
+
+
+
     fetch(URL_GRAFICOS_MADRID)
         .then(response => response.text())
         .then(data => {
             let array_datos_parseado = parseCSV(data);
+            array_datos_parseado = limpiarYParsearNumeros(array_datos_parseado);
+            mostrarSeccionMadrid(array_datos_parseado);
+            mostrarSeccionEspania(array_datos_parseado);
+            mostrarSeccionCCAA(array_datos_parseado);
 
-            ///lo que hay que añadir a parseaGraficosCSVMadrid
-            console.log (array_datos_parseado);
-
-            muestraDatosVacunaMadridDosPuntoCero(array_datos_parseado);
-            muestraDatosVacunaEspanaDosPuntoCero(array_datos_parseado);
-
-
-
-            //---- SLIDE 1 -----     
-            dibujarGraficoMadrid(array_datos_parseado);
-
-            dibujarGraficoDosisAdministradasMadrid(array_datos_parseado);
-
-            dibujarGraficoDosisPautaCompletaMadrid(array_datos_parseado);
-
-            //---- SLIDE 2 -----
-            dibujarGraficoDosisEntregadasEspana(array_datos_parseado);
-
-            dibujarGraficoDosisAdministradasEspana(array_datos_parseado);
-
-            dibujarGraficoInmunesEspana(array_datos_parseado);
-
-            //---- SLIDE 3 -----
-            // Ultimos datos por CCAA
-            dibujarGraficosCCAA(array_datos_parseado);
+            lc.dismiss();
 
         })
-        .catch(error => mostrarToast());
+        .catch(error => {
+            lc.dismiss();
+            console.log("error " + error);
+            mostrarToast();
+            
+
+        });
 
 }
 //OTRA FUNCION PARA PARSEAR CSV, A DIFERENCIA DE LA ANTERIOR, DEVUELVE UN ARRAY DE ARRAYS EN EL QUE CADA ARRAY
@@ -117,81 +143,70 @@ function parseCSV(str) {
 }
 
 
-
+//"informe", "comunidad autónoma", "dosis Pfizer", "dosis Moderna", "dosis AstraZeneca", "dosis entregadas", "dosis administradas", "% sobre entregadas", "personas con pauta completa", "última vacuna registrada"
 /**
  * 
  0:fecha informe
-​​​
+  ​
 1: "comunidad autónoma"
-​​​
+  ​
 2: "dosis Pfizer"
-​​​
+  ​
 3: "dosis Moderna"
-​​​
+  ​
 4: "dosis AstraZeneca"
-​​​
+  ​
 5: "dosis entregadas"
-​​​
+  ​
 6: "dosis administradas"
-​​​
+  ​
 7: "% sobre entregadas"
-​​​
+  ​
 8: "personas con pauta completa"
-​​​
+  ​
 9: "última vacuna registrada"} datos 
  */
 // --------------------- SLIDE 1: EVOLUCIÓN MADRID POR FECHA -----------------------------------------//
 
-function muestraDatosVacunaMadridDosPuntoCero(datos) {
 
-    let poblacionMadrid = 6779888;
+function muestraDatosVacunaMadridDosPuntoCero(ultimos_datos_Madrid) {
 
-    let longitudDosisEntregadas = datos.length;
-    //el primer dato de madrid aparece en la posicion 7 empezando desde el final
-    longitudDosisEntregadas = longitudDosisEntregadas - 7;
-    let dosis = datos[longitudDosisEntregadas];
+    let dosis_recibidas, dosis_administradas, porcentaje_recibidas_poblacion, porcentaje_administradas_recibidas, porcentaje_administradas_poblacion, personas_pauta_completa, porcentaje_poblacion_pauta_completa;
+
+
+    console.log("Datos madrid = " + ultimos_datos_Madrid);
+
+    //26/03/2021,Madrid,753.405,85.200,289.800,1.128.405,943.113,"83,6%",306.011,25/03/2021
 
     //dosis entregadas esta en la posicion 4 empezando desde el principio
     //corejimos ajora estaá ne 5
-    let numeroFormateado = dosis[5];
-
-    let porcentajeEntregadas = trunc((dosis[5].replace('.', "") * 100) / poblacionMadrid, 3);
-
-    //la cifra con las dosis administradas esta en la posicion 5 del array resultante
-    //corejimos ahora está en 6
-    let dosisAdministradas = dosis[6];
-
-    let porcentPoblacionMadridAdministradas = trunc((dosis[6].replace('.', "") * 100) / poblacionMadrid, 3);
-
-    let porcentajeAdministradasSobreTotal = (dosis[6].replace('.', "") * 100) / dosis[5].replace('.', "");
-    porcentajeAdministradasSobreTotal = trunc(porcentajeAdministradasSobreTotal, 2);
-
-    //el dato de personas con pauta completa aparece en la posicion 7 del array resultante
-    //corejimos ahora en la 8
-    let dosDosis = dosis[8];
-
-    let porcentajeCompletTotal = trunc(((dosis[8].replace('.', "") * 100) / poblacionMadrid), 3);
+    dosis_recibidas = ultimos_datos_Madrid[5];
+    dosis_administradas = ultimos_datos_Madrid[6];
+    porcentaje_administradas_recibidas = ultimos_datos_Madrid[7];
+    personas_pauta_completa = ultimos_datos_Madrid[8];
+    porcentaje_poblacion_pauta_completa = trunc((personas_pauta_completa * 100) / POBLACION_MADRID, 3);
 
     let dosisDistribuidas = document.getElementById("dosisDistribuidas");
-    let porcentajeDosisEntregadas = document.getElementById("porcentajeDosisEntregadas");
+    //let porcentajeDosisEntregadas = document.getElementById("porcentajeDosisEntregadas");
     let dosisAdministradasTotal = document.getElementById("dosisAdministradas");
-    let porcentajeMadridAdministradas = document.getElementById("porcentajePoblacionAdministradas");
+    //let porcentajeMadridAdministradas = document.getElementById("porcentajePoblacionAdministradas");
     let porcentajeAdministradasTotal = document.getElementById("porcentajeAdministradasTotal");
     let pautaCompleta = document.getElementById("pautaCompleta");
     let porcenSobreTotalCompletas = document.getElementById("porcenSobreTotalCompletas");
     let fecha = document.getElementById("fechaAct");
     let fechaSlideTres = document.getElementById("fechaActua");
 
-    porcentajeDosisEntregadas.innerHTML = porcentajeEntregadas
-    dosisAdministradasTotal.innerHTML = dosisAdministradas;
-    porcentajeMadridAdministradas.innerHTML = porcentPoblacionMadridAdministradas;
-    dosisDistribuidas.innerHTML = numeroFormateado;
-    porcentajeAdministradasTotal.innerHTML = porcentajeAdministradasSobreTotal;
-    pautaCompleta.innerHTML = dosDosis;
-    porcenSobreTotalCompletas.innerHTML = porcentajeCompletTotal;
+    //porcentajeDosisEntregadas.innerHTML = porcentaje_recibidas_poblacion;
+    dosisAdministradasTotal.innerHTML = dosis_administradas;
+    //porcentajeMadridAdministradas.innerHTML = porcentaje_administradas_poblacion;
+    dosisDistribuidas.innerHTML = dosis_recibidas;
+    porcentajeAdministradasTotal.innerHTML = porcentaje_administradas_recibidas;
+    pautaCompleta.innerHTML = personas_pauta_completa;
+    porcenSobreTotalCompletas.innerHTML = porcentaje_poblacion_pauta_completa;
+    console.log("Entregadas = " + dosis_recibidas + " % Entregadas " + porcentaje_recibidas_poblacion + " Administradas " + dosis_administradas + " % Administradas por Población " + porcentaje_recibidas_poblacion + " % Administradas por Recibidas " + porcentaje_administradas_recibidas + " Completa " + personas_pauta_completa + " % Completa " + porcentaje_poblacion_pauta_completa);
     //alert("fecha " + dosis[0]);
-    fecha.innerHTML = dosis[0];
-    fechaSlideTres.innerHTML = dosis[0];
+    fecha.innerHTML = ultimos_datos_Madrid[0];
+    fechaSlideTres.innerHTML = ultimos_datos_Madrid[0];
 
 
 }
@@ -202,358 +217,121 @@ function muestraDatosVacunaMadridDosPuntoCero(datos) {
 // oden subarray posicion 0 fecha, posicion 5 dosis entregadas, posicion 6 dosis administradas,
 //posicion 7 % sobre entregadas, posicion 8 pauta completada
 
-function dibujarGraficoMadrid(datos) {
-    // let arrayDatos = datos;
-    //muestraDatosVacunaMadridDosPuntoCero(arrayDatos);
+function dibujarGraficoMadridRecibidas(ultimos7_datos_madrid, ultimas7_fechas_Madrid) {
 
-    //en este caso el csv es un array en el q cada elemento del array es otro array con los datos de cada
-    //fila del csv
-    let fechas = [];
-    let indiceMadridDesdeElFinal = datos.length;
-    //madrid esta en la posicion 7 del array de arrays empezando desde el final
-    indiceMadridDesdeElFinal = indiceMadridDesdeElFinal - 7;
-    console.log("longitud datos ", indiceMadridDesdeElFinal);
-    let i = 0;
 
-    while (i < 7) {
-        //se recoge el array de la posicion 7 desde el final, q es donde esta el primer dato de madrid
-        let formatFecha = datos[indiceMadridDesdeElFinal];
-        //en el array resultando las fechas estan en la posicion 0 (la primera del array)
-        fechas.push(formatFecha[0]);
-        //en el array de arrays cada dato de madrid esta cada 20 posiciones empezando por el final
-        indiceMadridDesdeElFinal = indiceMadridDesdeElFinal - 20;
-        i++;
-    }
-    //se da la vuelta al array para que las fechas queden en orden cronologico
-    fechas = fechas.reverse();
-    i = 0;
-    let longitudDosisEntregadas = datos.length;
-    //se recoge el array de la posicion 7 desde el final, q es donde esta el primer dato de madrid
-    longitudDosisEntregadas = longitudDosisEntregadas - 7;
-    let dosisEntregadas = [];
-
-    while (i < 7) {
-
-        let dosis = datos[longitudDosisEntregadas];
-        //en el array resultante que cogemos del array de arrays, el dato de dosis entregadas
-        //de madrid esta en la posicion 4 empezando desde el principio
-        //correjimos en la 5
-        dosisEntregadas.push(dosis[5].replace('.', ""));
-        //en el array de arrays cada dato de madrid esta cada 20 posiciones empezando por el final
-        longitudDosisEntregadas = longitudDosisEntregadas - 20;
-        i++;
-    }
-    //se da la vuelta al array para que las dosis entregadas queden en orden cronológico
-    dosisEntregadas.reverse();
+    let ultimos7_registros_dosis_Entregadas_Madrid = ultimos7_datos_madrid.map(registro => registro[5]);
 
     let ctx = document.getElementById('myChartMadridEntregadas').getContext('2d');
 
-    dibujarGraficaLinea(ctx, fechas, dosisEntregadas, 'rgb(16, 26, 214)', 'Vacunas distribuidas Madrid');
+    dibujarGraficaLinea(ctx, ultimas7_fechas_Madrid, ultimos7_registros_dosis_Entregadas_Madrid, 'rgb(16, 26, 214)', 'Vacunas distribuidas Madrid');
 
 }
 
 //grafico de dosis administradas Madrid
-function dibujarGraficoDosisAdministradasMadrid(datos) {
+function dibujarGraficoMadridAdministradas(ultimos7_datos_madrid, ultimas7_fechas_Madrid) {
 
-    let fechas = [];
-    let indiceMadridDesdeElFinal = datos.length;
-    //el primer dato de madrid empieza en el array de arrays en la posicion 7 empezando por el final
-    indiceMadridDesdeElFinal = indiceMadridDesdeElFinal - 7;
-    console.log("longitud datos ", indiceMadridDesdeElFinal);
-    let i = 0;
 
-    while (i < 7) {
-        //agregamos las fechas cada 20 posiciones
-        let formatFecha = datos[indiceMadridDesdeElFinal];
-        //en el array resultante la fecha esta en la posicion 0
-        fechas.push(formatFecha[0]);
-        //el dato de madrid esta cada 20 posiciones empezando por el final
-        indiceMadridDesdeElFinal = indiceMadridDesdeElFinal - 20;
-        i++;
-    }
-    //se le da la vuelta al array para que salga en orden cronologico
-    fechas = fechas.reverse();
-
-    i = 0;
-    let longitudDosisEntregadas = datos.length;
-    //el primer dato de madrid empieza en el array de arrays en la posicion 7 empezando por el final
-
-    longitudDosisEntregadas = longitudDosisEntregadas - 7;
-    //el array es de dosis administradas, aunque en el nombre figure 'entregadas'
-    let dosisEntregadas = [];
-
-    while (i < 7) {
-
-        let dosis = datos[longitudDosisEntregadas];
-        //la cifra con las dosis administradas esta en la posicion 5 del array resultante
-        //6 correjimos
-        dosisEntregadas.push(dosis[6].replace('.', ""));
-        //el dato de madrid esta cada 20 posiciones empezando por el final
-        longitudDosisEntregadas = longitudDosisEntregadas - 20;
-        i++;
-    }
-    //se le da la vuelta al array para que salga en orden cronológico
-    dosisEntregadas.reverse();
-
+    let ultimos7_registros_dosis_Administradas_Madrid = ultimos7_datos_madrid.map(registro => registro[6]);
     let ctx = document.getElementById('myChartMadridAdministradas').getContext('2d');
-    
-    dibujarGraficaLinea(ctx, fechas, dosisEntregadas, 'rgb(226, 83, 3)', 'Vacunas administradas Madrid');
+
+    dibujarGraficaLinea(ctx, ultimas7_fechas_Madrid, ultimos7_registros_dosis_Administradas_Madrid, 'rgb(226, 83, 3)', 'Vacunas administradas Madrid');
 
 }
 
 //dibuja grafico personas con las dos dosis administrada Madrid
-function dibujarGraficoDosisPautaCompletaMadrid(datos) {
+function dibujarGraficoMadridPautaCompleta(ultimos7_datos_madrid, ultimas7_fechas_Madrid) {
 
-    let fechas = [];
-    let indiceMadridDesdeElFinal = datos.length;
-    //el primer dato de madrid aparece en la posicion 7 empezando desde el final
-    indiceMadridDesdeElFinal = indiceMadridDesdeElFinal - 7;
-    console.log("longitud datos ", indiceMadridDesdeElFinal);
-    let i = 0;
-
-    while (i < 7) {
-
-        let formatFecha = datos[indiceMadridDesdeElFinal];
-        //la fecha en el array resultante esta en la posicion 0
-        fechas.push(formatFecha[0]);
-        //en el array de arrays cada dato de madrid esta cada 20 posiciones empezando desde el final
-        indiceMadridDesdeElFinal = indiceMadridDesdeElFinal - 20;
-        i++;
-    }
-    //damos la vuelta al array de fechas para que salga en orden cronologico
-    fechas = fechas.reverse();
-
-    i = 0;
-    let longitudDosisEntregadas = datos.length;
-    //el primer dato de madrid aparece en la posicion 7 empezando desde el final
-    longitudDosisEntregadas = longitudDosisEntregadas - 7;
-    //el array esde personas con pauta completada, aunque en el nombre aparezca 'dosis entregadas'
-    let dosisEntregadas = [];
-
-    while (i < 7) {
-
-        let dosis = datos[longitudDosisEntregadas];
-        //el dato de personas con pauta completa aparece en la posicion 7 del array resultante
-        //8 correjimos
-        dosisEntregadas.push(dosis[8].replace('.', ""));
-        //en el array de arrays cada dato de madrid esta cada 20 posiciones empezando desde el final
-        longitudDosisEntregadas = longitudDosisEntregadas - 20;
-        i++;
-    }
-    //damos la vuelta al array de pauta completada para que salga en orden cronológico
-    dosisEntregadas.reverse();
+    let ultimos7_registros_dosis_PautaCompleta_Madrid = ultimos7_datos_madrid.map(registro => registro[8]);
 
     let ctx = document.getElementById('myChartMadridCompletadas').getContext('2d');
-    
-    dibujarGraficaLinea(ctx, fechas, dosisEntregadas, 'rgb(83, 225, 162)', 'Vacunas pauta completa Madrid');
+
+    dibujarGraficaLinea(ctx, ultimas7_fechas_Madrid, ultimos7_registros_dosis_PautaCompleta_Madrid, 'rgb(83, 225, 162)', 'Vacunas pauta completa Madrid');
 }
 
 
 // --------------------- SLIDE 2: EVOLUCIÓN ESPAÑA POR FECHA ------------------------------------------//
 
 
-function muestraDatosVacunaEspanaDosPuntoCero(datos) {
+function muestraDatosVacunaEspanaDosPuntoCero(ultimos_datos_Espania) {
 
-    let longitudDosisEntregadas = datos.length - 1;
-    //El ultimo array del último array son los datos totales (España) más recientes
 
-    let dosis = datos[longitudDosisEntregadas];
-
-    let poblacionEs = 47329000;
-    //correjimos 5 x4
-    let entregadas_total = dosis[5].replace('.', "");
-    //indice 2 pfizer
-    let total_Pfizer = dosis[2].replace('.', "");
-    //indice 3 moderna
-    let total_Moderna = dosis[3].replace('.', "");
-    //indice 4 astraznca
-    let total_Astrazenca = dosis[4].replace('.', "");
+    let entregadas_total = ultimos_datos_Espania[5];
+    let total_Pfizer = ultimos_datos_Espania[2];
+    let total_Moderna = ultimos_datos_Espania[3];
+    let total_Astrazenca = ultimos_datos_Espania[4];
 
 
     let num_entregadas = document.getElementById("dosis_totales_ES");
     let chart1_texto = document.getElementById("chart1_text");
 
     //corejimos a 5
-    num_entregadas.innerHTML = dosis[5];
+    num_entregadas.innerHTML = entregadas_total;
     chart1_texto.innerHTML = "<b>" + (total_Pfizer * 100 / entregadas_total).toFixed(2) + "%</b> de Pfizer <br><b>" +
-        trunc((((total_Moderna * 100) / entregadas_total) * 0.001), 2) + "% </b> de Moderna <br><b>"+
-        trunc((((total_Astrazenca * 100) / entregadas_total) * 0.001), 2) + "% </b> de Astrazenca";
-     /*   chart1_texto.innerHTML = "En España se han entregado un total de <b>" + dosis[4] +
-        "</b> dosis de las cuales el <b>" + (total_Pfizer * 100 / entregadas_total).toFixed(2) + "%</b> de Pfizer y el <b>" +
-        trunc((((total_Moderna * 100) / entregadas_total) * 0.001), 2) + "% </b> de Moderna.";*/
+        (total_Moderna * 100 / entregadas_total).toFixed(2) + "% </b> de Moderna <br><b>" +
+        (total_Astrazenca * 100 / entregadas_total).toFixed(2) + "% </b> de Astrazeneca";
+    //document.getElementById("porcentajeDosisEntregadasES").innerHTML= trunc((entregadas_total * 100) / POBLACION_ESPANIA, 3);;
 
-//correjimos a 6
-    let admin_total = dosis[6];
+
+    let admin_total = ultimos_datos_Espania[6];
     //correjimos a 6
-    let admin_por_total = trunc((dosis[6].replace('.', "") * 100) / poblacionEs, 3);
+    let admin_por_total = trunc((admin_total * 100) / POBLACION_ESPANIA, 3);
     let dosis_admin = document.getElementById("dosis_admin_ES");
     let chart2_texto = document.getElementById("chart2_text");
     console.log("admin_total", admin_total);
     dosis_admin.innerHTML = admin_total;
-    chart2_texto.innerHTML = "El <b>" +(admin_total.replace('.', "") * 100 / entregadas_total).toFixed(2) + "%</b> de vacunas recibidas ya han sido administradas";
-    
-        /*chart2_texto.innerHTML = "En España se han administrado <b>" + admin_total +
-        "</b> dosis que son el <b>" + (admin_total.replace('.', "") * 100 / entregadas_total).toFixed(2) + "%</b> de las dosis entregadas y el <b>" +
-        admin_por_total + "%</b> de la población." */
+    chart2_texto.innerHTML = "El <b>" + (admin_total.replace('.', "") * 100 / entregadas_total).toFixed(2) + "%</b> de vacunas recibidas ya han sido administradas";
+    //document.getElementById("porcentajePoblacionAdministradasES").innerHTML=admin_por_total;
 
-//correimos pauta completa es 8
-    let adminx2_total = dosis[8];
+
+
+    //correimos pauta completa es 8
+    let adminx2_total = ultimos_datos_Espania[8];
     //fallo grave. hay que hacer replaceALl y no replace... si no solo cambia el primer punto y los millones los hace mal
-    let adminx2_por_total = trunc((dosis[8].replaceAll('.', "") * 100) / poblacionEs, 3);
+    let adminx2_por_total = trunc((adminx2_total * 100) / POBLACION_ESPANIA, 3);
     //let adminx2_por_total = trunc(adminx2_total / poblacionEs, 3);
-    console.log("porcentaje inmunida2 = "+ adminx2_por_total);
+    console.log("porcentaje inmunida2 = " + adminx2_por_total);
 
     let num_adminx2 = document.getElementById("pauta_comp_ES");
-    let chart3_texto = document.getElementById("chart3_text");
+    // let chart3_texto = document.getElementById("chart3_text");
     console.log("pauta_comp", adminx2_total);
     num_adminx2.innerHTML = adminx2_total;
-    chart3_texto.innerHTML = "<b>" + adminx2_por_total + "%</b> de la población";
+    // chart3_texto.innerHTML = "<b>" + adminx2_por_total + "%</b> de la población";
+    document.getElementById("porcentajePoblacionInmuneES").innerHTML = trunc((adminx2_total * 100) / POBLACION_ESPANIA, 3);
 
-        /*chart3_texto.innerHTML = "En España ya hay <b>" + adminx2_total +
-        "</b> personas con la pauta completa administrada.<br>Esto es el <b>" + adminx2_por_total + "%</b> de la población."*/
+    /*chart3_texto.innerHTML = "En España ya hay <b>" + adminx2_total +
+    "</b> personas con la pauta completa administrada.<br>Esto es el <b>" + adminx2_por_total + "%</b> de la población."*/
     let fecha = document.getElementById("fechaActu");
-    fecha.innerHTML = dosis[0];
+    fecha.innerHTML = ultimos_datos_Espania[0];
+
+
 }
 
 //grafico de dosis administradas España
-function dibujarGraficoDosisEntregadasEspana(datos) {
+function dibujarGraficoDosisEntregadasEspana(ultimos7_datos_Espania, ultimas7_fechas_Espania) {
 
-    let fechas = [];
-    let indiceTotalesDesdeElFinal = datos.length;
-    //El ultimo array del último array son los datos totales (España) más recientes
-    indiceTotalesDesdeElFinal = indiceTotalesDesdeElFinal - 1;
-    //console.log("longitud datos " + indiceTotalesDesdeElFinal);
-    let i = 0;
-
-    while (i < 7) {
-        //agregamos las fechas cada 20 posiciones
-        let formatFecha = datos[indiceTotalesDesdeElFinal];
-        //en el array resultante la fecha esta en la posicion 0
-        fechas.push(formatFecha[0]);
-        //el dato de totales esta cada 20 posiciones empezando por el final
-        indiceTotalesDesdeElFinal = indiceTotalesDesdeElFinal - 20;
-        i++;
-    }
-    //se le da la vuelta al array para que salga en orden cronologico
-    fechas = fechas.reverse();
-
-    i = 0;
-    let longitudDosisEntregadas = datos.length;
-    //El ultimo array del último array son los datos totales (España) más recientes
-    longitudDosisEntregadas = longitudDosisEntregadas - 1;
-    //el array es de dosis administradas, aunque en el nombre figure 'entregadas'
-    let dosisEntregadas = [];
-
-    while (i < 7) {
-
-        let dosis = datos[longitudDosisEntregadas];
-        //la cifra con las dosis administradas esta en la posicion 5 del array resultante
-        //correjimos a 5
-        dosisEntregadas.push(dosis[5].replace(/[$.]/g, ''));
-        //el dato de totales esta cada 20 posiciones empezando por el final
-        longitudDosisEntregadas = longitudDosisEntregadas - 20;
-        i++;
-    }
-    //se le da la vuelta al array para que salga en orden cronológico
-    dosisEntregadas.reverse();
-
+    let ultimos7_registros_dosis_Entregadas_Espania = ultimos7_datos_Espania.map(registro => registro[5]);
     let ctx = document.getElementById('myChart').getContext('2d');
 
-    dibujarGraficaLinea(ctx, fechas, dosisEntregadas, 'rgb(16, 26, 214)', 'Vacunas distribuidas España');
-
+    dibujarGraficaLinea(ctx, ultimas7_fechas_Espania, ultimos7_registros_dosis_Entregadas_Espania, 'rgb(16, 26, 214)', 'Vacunas distribuidas España');
 }
 
-function dibujarGraficoDosisAdministradasEspana(datos) {
+function dibujarGraficoDosisAdministradasEspana(ultimos7_datos_Espania, ultimas7_fechas_Espania) {
 
-    let fechas = [];
-    let indiceTotalesDesdeElFinal = datos.length;
-    //El ultimo array del último array son los datos totales (España) más recientes
-    indiceTotalesDesdeElFinal = indiceTotalesDesdeElFinal - 1;
-    //console.log("longitud datos " + indiceTotalesDesdeElFinal );
-    let i = 0;
 
-    while (i < 7) {
-        //agregamos las fechas cada 20 posiciones
-        let formatFecha = datos[indiceTotalesDesdeElFinal];
-        //en el array resultante la fecha esta en la posicion 0
-        fechas.push(formatFecha[0]);
-        //el dato de totales esta cada 20 posiciones empezando por el final
-        indiceTotalesDesdeElFinal = indiceTotalesDesdeElFinal - 20;
-        i++;
-    }
-    //se le da la vuelta al array para que salga en orden cronológico
-    fechas = fechas.reverse();
-
-    i = 0;
-    let longitudDosisEntregadas = datos.length;
-    //El ultimo array del último array son los datos totales (España) más recientes
-    longitudDosisEntregadas = longitudDosisEntregadas - 1;
-    //el array es de dosis administradas, aunque en el nombre figure 'entregadas'
-    let dosisEntregadas = [];
-
-    while (i < 7) {
-
-        let dosis = datos[longitudDosisEntregadas];
-        //la cifra con las dosis administradas esta en la posicion 5 del array resultante
-        //correjimos a 6
-        dosisEntregadas.push(dosis[6].replace(/[$.]/g, ''));
-        //el dato de totales esta cada 20 posiciones empezando por el final
-        longitudDosisEntregadas = longitudDosisEntregadas - 20;
-        i++;
-    }
-    //se le da la vuelta al array para que salga en orden cronológico
-    dosisEntregadas.reverse();
-
+    let ultimos7_registros_dosis_Administradas_Espania = ultimos7_datos_Espania.map(registro => registro[6]);
     let ctx = document.getElementById('myChartAdministradas').getContext('2d');
 
-    dibujarGraficaLinea(ctx, fechas, dosisEntregadas, 'rgb(226, 83, 3)', 'Vacunas administradas España');
+    dibujarGraficaLinea(ctx, ultimas7_fechas_Espania, ultimos7_registros_dosis_Administradas_Espania, 'rgb(226, 83, 3)', 'Vacunas administradas España');
 
 }
 
-function dibujarGraficoInmunesEspana(datos) {
+function dibujarGraficoInmunesEspana(ultimos7_datos_Espania, ultimas7_fechas_Espania) {
 
-    let fechas = [];
-    let indiceTotalesDesdeElFinal = datos.length;
-    //El ultimo array del último array son los datos totales (España) más recientes
-    indiceTotalesDesdeElFinal = indiceTotalesDesdeElFinal - 1;
-    //console.log("longitud datos " + indiceTotalesDesdeElFinal);
-    let i = 0;
-
-    while (i < 7) {
-        //agregamos las fechas cada 20 posiciones
-        let formatFecha = datos[indiceTotalesDesdeElFinal];
-        //en el array resultante la fecha esta en la posicion 0
-        fechas.push(formatFecha[0]);
-        //el dato de totales esta cada 20 posiciones empezando por el final
-        indiceTotalesDesdeElFinal = indiceTotalesDesdeElFinal - 20;
-        i++;
-    }
-    //se le da la vuelta al array para que salga en orden cronológico
-    fechas = fechas.reverse();
-
-    i = 0;
-    let longitudDosisEntregadas = datos.length;
-    //El ultimo array del último array son los datos totales (España) más recientes
-    longitudDosisEntregadas = longitudDosisEntregadas - 1;
-    //el array es de dosis administradas, aunque en el nombre figure 'entregadas'
-    let dosisEntregadas = [];
-
-    while (i < 7) {
-
-        let dosis = datos[longitudDosisEntregadas];
-        //la cifra con las dosis administradas esta en la posicion 5 del array resultante
-        //correjimos inmunizados a 8
-        dosisEntregadas.push(dosis[8].replace(/[$.]/g, ''));
-        //el dato de totales esta cada 20 posiciones empezando por el final
-        longitudDosisEntregadas = longitudDosisEntregadas - 20;
-        i++;
-    }
-    //se le da la vuelta al array para que salga en orden cronologico
-    dosisEntregadas.reverse();
-
+    let ultimos7_registros_dosis_PautaCompleta_Espania = ultimos7_datos_Espania.map(registro => registro[8]);
     let ctx = document.getElementById('myChartCompletada').getContext('2d');
 
-    dibujarGraficaLinea(ctx, fechas, dosisEntregadas, 'rgb(83, 225, 162)', 'Vacunas pauta completa España');
+    dibujarGraficaLinea(ctx, ultimas7_fechas_Espania, ultimos7_registros_dosis_PautaCompleta_Espania, 'rgb(83, 225, 162)', 'Vacunas pauta completa España');
 
 }
 
@@ -565,7 +343,7 @@ function dibujarGraficoInmunesEspana(datos) {
 // [0]=fecha informe ;[1]= ccaa, [4]= dosis entregadas, [5]=dosis admin, [6]=% admin sobre entregadas, 
 // [7]= pauta completa[8] = fecha ultima vacuna registrada.
 
-function dibujarGraficosCCAA(datos) {
+function mostrarSeccionCCAA(datos) {
 
     //Datos totales mas recientes
     let datos_totales = datos.pop();
@@ -578,12 +356,11 @@ function dibujarGraficosCCAA(datos) {
     let dosis_adminx2 = [];
     let dosis_por_admin = [];
 
-    for (let i = (datos.length - 19); i < datos.length; i++) {
+    for (let i = (datos.length - 20); i < datos.length; i++) {
         ccaa.push(datos[i][1]);
-        //corregimos por 5 6 7 8
-        dosis_admin.push(Number.parseInt(datos[i][6].replaceAll(".", "")));
-        dosis_entregadas.push(Number.parseInt(datos[i][5].replaceAll(".", "")));
-        dosis_adminx2.push(Number.parseInt(datos[i][8].replaceAll(".", "")));
+        dosis_admin.push(Number.parseInt(datos[i][6]));
+        dosis_entregadas.push(Number.parseInt(datos[i][5]));
+        dosis_adminx2.push(Number.parseInt(datos[i][8]));
         Number.parseFloat(dosis_por_admin.push(datos[i][7].replaceAll("%", "").replace(",", ".")));
     }
     console.log(ccaa);
