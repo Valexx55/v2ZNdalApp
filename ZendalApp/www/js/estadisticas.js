@@ -379,9 +379,7 @@ function pintarDatos(arrayDatos) {
 
     lista_localidades.style.height = "auto";
     lista_zbs.style.height = "auto";
-    //card_estadisticas_localidades.style.height = "calc(100vh - 316px)";
-    card_estadisticas_localidades.style.height = "auto";//"calc(100vh - 316px)";
-    //card_estadisticas_zbs.style.height = "calc(100vh - 316px)";
+    card_estadisticas_localidades.style.height = "auto";
     card_estadisticas_zbs.style.height = "auto";
 
     if (tabzbs) {
@@ -393,12 +391,14 @@ function pintarDatos(arrayDatos) {
     }
 
 
-
+    let ct = (arrayDatos.casos_confirmados_totales===undefined) ?  'Desconocido' : arrayDatos.casos_confirmados_totales;
+    let ctu14 = (arrayDatos.casos_confirmados_ultimos_14dias===undefined) ?  'Desconocido' : arrayDatos.casos_confirmados_ultimos_14dias;
+    let tiu14t = (arrayDatos.tasa_incidencia_acumulada_ultimos_14dias===undefined) ?  'Desconocido' : arrayDatos.tasa_incidencia_acumulada_ultimos_14dias;
+   
     datos = tabzbs ? document.getElementById("datosZBS") : document.getElementById("datos");
-    datos.innerHTML = "Casos totales: " + arrayDatos.casos_confirmados_totales + "<br>";
-    datos.innerHTML = datos.innerHTML + "Casos últimos 14 días: " + arrayDatos.casos_confirmados_ultimos_14dias + "<br>";
-    datos.innerHTML = datos.innerHTML + "TIA total: " + arrayDatos.tasa_incidencia_acumulada_total.toFixed(2) + "<br>";
-    datos.innerHTML = datos.innerHTML + " TIA últimos 14 días: " + arrayDatos.tasa_incidencia_acumulada_ultimos_14dias.toFixed(2);
+    datos.innerHTML = "Casos totales: " + ct + "<br>";
+    datos.innerHTML = datos.innerHTML + "Casos últimos 14 días: " + ctu14 + "<br>";
+    datos.innerHTML = datos.innerHTML + " TIA últimos 14 días: " + tiu14t.toFixed(2);
 
 
 

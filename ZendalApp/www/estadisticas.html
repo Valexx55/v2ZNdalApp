@@ -49,13 +49,17 @@
     #listalocalidades,
     #listazbs {
       height: 0;
-      overflow: scroll;
+      overflow-y: scroll;
     }
 
-    #card-estadisticas-localidades,
-    #card-estadisticas-zbs {
-      overflow: scroll;
-      height: calc(100vh - 316px);
+    ion-nav
+    {
+      overflow: scroll;/*si desborda la gráfica, se ve bien en todos los dispositivos*/
+     
+    }
+
+    .list-md {
+      padding: 0px;/*se evita un hueco feo entre la gráfica y la lista de zbs/localidades*/
     }
   </style>
   <script type="module">
@@ -149,7 +153,7 @@
               </ion-list>
 
               <ion-card id="card-estadisticas-localidades">
-                <canvas id="myChart"></canvas>
+                <canvas id="myChart" width="400" height="400"></canvas>
                 <ion-card-header>
                   <ion-card-title id="tituloLocalidad"></ion-card-title>
                   <ion-card-subtitle id="tituloFecha"></ion-card-subtitle>
@@ -172,7 +176,7 @@
               </ion-list>
 
               <ion-card id="card-estadisticas-zbs">
-                <canvas id="myChartZBS"></canvas>
+                <canvas id="myChartZBS" width="400" height="400"></canvas>
                 <ion-card-header>
                   <ion-card-title id="tituloZBS"></ion-card-title>
                   <ion-card-subtitle id="tituloFechaZBS"></ion-card-subtitle>
