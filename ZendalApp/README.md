@@ -32,6 +32,15 @@ para ejecutarlo en el móvil o bien abrir un html en el navegador del ordenador
 
     Mejoras en la gestión de espera y la visualización de estadísticas 
     Corrección de errores en dispositivos pequeños
+
+1.0.4 ABRIL 2021 rib
+
+    Actualizacion estadísticas vacunación: ahora llegan cuántas personas tienen al menos 1 dosis
+
+1.0.5 ABRIL 2021 jsn
+
+    Actualizadas con estadísticas de la nueva vacuna Jannsen
+    Cambio de icono
     
 
 
