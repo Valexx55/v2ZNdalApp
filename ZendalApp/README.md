@@ -46,8 +46,6 @@ para ejecutarlo en el móvil o bien abrir un html en el navegador del ordenador
 
 ### MEJORAS PENDIENTES / FALLOS CONOCIDOS 🔩
 
--En el mapa de restricciones, se muestra una nueva ventana DIV que trae el script de argcis y que muestra un mensaje informativo que tapa el mapa y no puede cerrarse, pues el botón de aceptar no se ve por un mal CSS
-
 -En Mi Zona, puedo seleccionar una localidad y una ZBS que no pertenezca a esa localidad. Debería impedirse
 
 -Comparador de ZBS
