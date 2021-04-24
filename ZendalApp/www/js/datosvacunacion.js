@@ -131,19 +131,22 @@ function parseCSV(str) {
     return arr;
 }
 
+
+
 const POS_FECHA_INFORME = 0
 const POS_CAM = 1;
 const POS_DOSIS_PFIZER = 2;
 const POS_DOSIS_MODERNA = 3;
 const POS_DOSIS_ASTRAZENECA = 4;
-const POS_DOSIS_ENTREGADAS = 5;
-const POS_DOSIS_ADMINISTRADAS = 6;
-const POS_PORCENTAJE_SOBRE_ENTREGADAS = 7;
-const POS_PERSONAS_CON_ALMENOS_UNA_DOSIS = 8;
-const POS_PAUTA_COMPLETADA = 9;
-const POS_ULTIMA_VACUNA_REGISTRADA = 10;
+const POS_DOSIS_JANSSEN = 5;
+const POS_DOSIS_ENTREGADAS = 6;
+const POS_DOSIS_ADMINISTRADAS = 7;
+const POS_PORCENTAJE_SOBRE_ENTREGADAS = 8;
+const POS_PERSONAS_CON_ALMENOS_UNA_DOSIS = 9;
+const POS_PAUTA_COMPLETADA = 10;
+const POS_ULTIMA_VACUNA_REGISTRADA = 11;
 
-
+//informe,  comunidad autónoma,    dosis Pfizer,    dosis Moderna,   dosis AstraZeneca,  dosis Janssen,   dosis entregadas,dosis administradas,% sobre entregadas,personas con al menos una dosis,personas con pauta completa,última vacuna registrada
 //informe  ,comunidad autónoma    ,dosis Pfizer    ,dosis Moderna,   dosis AstraZeneca,  dosis entregadas,   dosis administradas,   % sobre entregadas,   personas con al menos una dosis,  personas con pauta completa,última vacuna registrada
 //"informe", "comunidad autónoma", "dosis Pfizer", "dosis Moderna", "dosis AstraZeneca", "dosis entregadas", "dosis administradas", "% sobre entregadas", "personas con pauta completa", "última vacuna registrada"
 /**
@@ -212,8 +215,8 @@ function muestraDatosVacunaMadridDosPuntoCero(ultimos_datos_Madrid) {
     porcenSobreTotalCompletas.innerHTML = porcentaje_poblacion_pauta_completa;
     console.log("Entregadas = " + dosis_recibidas + " % Entregadas " + porcentaje_recibidas_poblacion + " Administradas " + dosis_administradas + " % Administradas por Población " + porcentaje_recibidas_poblacion + " % Administradas por Recibidas " + porcentaje_administradas_recibidas + " Completa " + personas_pauta_completa + " % Completa " + porcentaje_poblacion_pauta_completa);
    
-    fecha.innerHTML = ultimos_datos_Madrid[0];
-    fechaSlideTres.innerHTML = ultimos_datos_Madrid[0];
+    fecha.innerHTML = ultimos_datos_Madrid[POS_FECHA_INFORME];
+    fechaSlideTres.innerHTML = ultimos_datos_Madrid[POS_FECHA_INFORME];
 
 
 }
@@ -267,6 +270,7 @@ function muestraDatosVacunaEspanaDosPuntoCero(ultimos_datos_Espania) {
     let total_Pfizer = ultimos_datos_Espania[POS_DOSIS_PFIZER];
     let total_Moderna = ultimos_datos_Espania[POS_DOSIS_MODERNA];
     let total_Astrazenca = ultimos_datos_Espania[POS_DOSIS_ASTRAZENECA];
+    let total_Janssen = ultimos_datos_Espania[POS_DOSIS_JANSSEN];
     let personas_con_al_menos_una_dosis_esp = ultimos_datos_Espania[POS_PERSONAS_CON_ALMENOS_UNA_DOSIS];
     let porcentaje_con_al_menos_una_dosis_esp = trunc((personas_con_al_menos_una_dosis_esp * 100) / POBLACION_ESPANIA, 2);
 
@@ -281,7 +285,8 @@ function muestraDatosVacunaEspanaDosPuntoCero(ultimos_datos_Espania) {
     num_entregadas.innerHTML = entregadas_total;
     chart1_texto.innerHTML = "<b>" + (total_Pfizer * 100 / entregadas_total).toFixed(2) + "%</b> de Pfizer <br><b>" +
         (total_Moderna * 100 / entregadas_total).toFixed(2) + "% </b> de Moderna <br><b>" +
-        (total_Astrazenca * 100 / entregadas_total).toFixed(2) + "% </b> de Astrazeneca";
+        (total_Astrazenca * 100 / entregadas_total).toFixed(2) + "% </b> de Astrazeneca<br><b>" +
+        (total_Janssen * 100 / entregadas_total).toFixed(2) + "% </b> de Janssen";
     //document.getElementById("porcentajeDosisEntregadasES").innerHTML= trunc((entregadas_total * 100) / POBLACION_ESPANIA, 3);;
 
 
@@ -314,7 +319,7 @@ function muestraDatosVacunaEspanaDosPuntoCero(ultimos_datos_Espania) {
     /*chart3_texto.innerHTML = "En España ya hay <b>" + adminx2_total +
     "</b> personas con la pauta completa administrada.<br>Esto es el <b>" + adminx2_por_total + "%</b> de la población."*/
     let fecha = document.getElementById("fechaActu");
-    fecha.innerHTML = ultimos_datos_Espania[0];
+    fecha.innerHTML = ultimos_datos_Espania[POS_FECHA_INFORME];
 
 
 }
@@ -369,7 +374,7 @@ function mostrarSeccionCCAA(datos) {
     let dosis_por_admin = [];
 
     for (let i = (datos.length - 20); i < datos.length; i++) {
-        ccaa.push(datos[i][1]);
+        ccaa.push(datos[i][POS_CAM]);
         dosis_admin.push(Number.parseInt(datos[i][POS_DOSIS_ADMINISTRADAS]));
         dosis_entregadas.push(Number.parseInt(datos[i][POS_DOSIS_ENTREGADAS]));
         dosis_adminx2.push(Number.parseInt(datos[i][POS_PAUTA_COMPLETADA]));

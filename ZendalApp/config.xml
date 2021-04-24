@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='utf-8'?>
-<widget android-versionCode="5" name="rib"  id="edu.val.ionic.zendal" version="1.0.4 rib" xmlns="http://www.w3.org/ns/widgets" xmlns:cdv="http://cordova.apache.org/ns/1.0">
+<widget android-versionCode="6" name="jnsn"  id="edu.val.ionic.zendal" version="1.0.5 jnsn" xmlns="http://www.w3.org/ns/widgets" xmlns:cdv="http://cordova.apache.org/ns/1.0">
     <name>Zendal APP</name>
     <description>
         Una aplicación para consultar las estadísticas de la situación de Madrid y España
@@ -28,7 +28,7 @@
         <icon src="res/android/xxdpi/ic_launcher_round.png" density="xhdpi" />
         <icon src="res/android/xxhdpi/ic_launcher_round.png" density="xxhdpi" />
         <icon src="res/android/xxxhdpi/ic_launcher_round.png" density="xxxhdpi" / >-->
-         <icon src="ic_launcher.png"/>
+         <icon src="javito.png"/>
         <!-- <icon src="covidcamlogo.png"/>
         <splash src="res/android/splash-port-ldpi.png" density="port-ldpi"/>
         <splash src="res/android/splash-port-mdpi.png" density="port-mdpi"/>
