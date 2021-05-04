@@ -1,11 +1,30 @@
 
 this.onload = carga;
 //30-3 VAL correciones a lo que era un serio candidato al BOMBAY DECADE CODE AWARD
+//4-5 VAL MEJORAS EN LAS GRÁFICAS:
+    //SE MUESTRAN LA SERIE DE RECIBIDAS SÓLO CON LOS 7 ÚLTIMOS SALTOS
+    //LAS ADMINISTRADAS E INMUNIZADAS SE MUESTRAN CON UN SALTO DE 5 DÍAS PARA MEJORAR LA VISILIDIDAD DE LA EVOLUCIÓN
+    //SE FORMATEAN CON COMAS Y PUNTOS DEBIDAMENTE LOS NÚMEROS TANTO DE LA GRÁFICA COMO DEL RESUMEN
+    //SE AÑADE GRÁFICO DE TARTA A LOS DISTIONTOS FABRICANTES DE VACUNAS
 
 const URL_GRAFICOS_MADRID = "https://raw.githubusercontent.com/civio/covid-vaccination-spain/main/data.csv";
 const POBLACION_MADRID = 6779888;
 const POBLACION_ESPANIA = 47329000;
 var lc;
+
+const POS_FECHA_INFORME = 0
+const POS_CAM = 1;
+const POS_DOSIS_PFIZER = 2;
+const POS_DOSIS_MODERNA = 3;
+const POS_DOSIS_ASTRAZENECA = 4;
+const POS_DOSIS_JANSSEN = 5;
+const POS_DOSIS_ENTREGADAS = 6;
+const POS_DOSIS_ADMINISTRADAS = 7;
+const POS_PORCENTAJE_SOBRE_ENTREGADAS = 8;
+const POS_PERSONAS_CON_ALMENOS_UNA_DOSIS = 9;
+const POS_PAUTA_COMPLETADA = 10;
+const POS_ULTIMA_VACUNA_REGISTRADA = 11;
+
 
 
 function carga() {
@@ -48,27 +67,108 @@ function mostrarSeccionEspania(array_datos_parseado) {
     let datosTotales = [];
     datosTotales = array_datos_parseado.filter(item => item[1].localeCompare('Totales') == 0);//FILTRAMOS SOLO LOS DATOS DE TOTAL
     let ultimos_datos_Espania = datosTotales[datosTotales.length - 1];//OBTENEMOS EL ÚLTIMO REGISTRO DE TOTALES
-    let ultimos7_datos_Espania = datosTotales.slice(datosTotales.length - 1 - 7, datosTotales.length);//OBTENEMOS LOS 7 ÚLTIMOS REGISTRO DE TOTALES
-    let ultimas7_fechas_Espania = ultimos7_datos_Espania.map(registro => registro[0]);//OBTENEMOS LAS 7 ÚLTIMAS FECHAS DE TOTALES
 
     muestraDatosVacunaEspanaDosPuntoCero(ultimos_datos_Espania);
 
-    dibujarGraficoDosisEntregadasEspana(ultimos7_datos_Espania, ultimas7_fechas_Espania);
-    dibujarGraficoDosisAdministradasEspana(ultimos7_datos_Espania, ultimas7_fechas_Espania);
-    dibujarGraficoInmunesEspana(ultimos7_datos_Espania, ultimas7_fechas_Espania);
+    let ultimos7_variaciones_esp_entragadas = [[],[]];//array bidimensional
+    ultimos7_variaciones_esp_entragadas = obtenerUltimos7SaltosDeDosisEntregadas (datosTotales);
+    let ultimos7_variaciones_esp_administradas = [[],[]];//array bidimensional
+    ultimos7_variaciones_esp_administradas = obtenerUltimos7DatosAdministradosConSalto (datosTotales);
+
+    let ultimos7_variaciones_esp_inmunizadas = [[],[]];//array bidimensional
+    ultimos7_variaciones_esp_inmunizadas = obtenerUltimos7DatosInmunizadosConSalto (datosTotales);
+
+    dibujarGraficoDosisEntregadasEspana2(ultimos7_variaciones_esp_entragadas[0], ultimos7_variaciones_esp_entragadas[1]);
+    dibujarGraficoDosisAdministradasEspana2(ultimos7_variaciones_esp_administradas[0], ultimos7_variaciones_esp_administradas[1]);
+    dibujarGraficoInmunesEspana2(ultimos7_variaciones_esp_inmunizadas[0], ultimos7_variaciones_esp_inmunizadas[1]);
 }
+
+function obtenerUltimos7SaltosDeDosisEntregadas (datos)
+{
+    let ultimos7_variaciones_madrid_entragadas = [[],[]];//array bidimensional
+    let cuenta_saltos = 0;
+    let dato_actual = 0;
+    let ultimo_dato=0;
+    let pos_actual = datos.length-1;
+
+        ultimos7_variaciones_madrid_entragadas [0].push (datos[pos_actual][POS_FECHA_INFORME]);
+        ultimos7_variaciones_madrid_entragadas [1].push (datos[pos_actual][POS_DOSIS_ENTREGADAS]);
+
+        cuenta_saltos++;
+        ultimo_dato = datos[pos_actual][POS_DOSIS_ENTREGADAS];
+        pos_actual--;
+
+        do{
+            dato_actual = datos[pos_actual][POS_DOSIS_ENTREGADAS];
+            if (dato_actual!=ultimo_dato)
+            {
+                //ha habido variación me lo guardo
+                ultimos7_variaciones_madrid_entragadas [0].push (datos[pos_actual][POS_FECHA_INFORME]);
+                ultimos7_variaciones_madrid_entragadas [1].push (datos[pos_actual][POS_DOSIS_ENTREGADAS]);
+                cuenta_saltos++;
+                ultimo_dato = datos[pos_actual][POS_DOSIS_ENTREGADAS];
+            }
+            pos_actual--;
+
+        }while ((cuenta_saltos<7)&&(pos_actual>=0));
+
+
+    return ultimos7_variaciones_madrid_entragadas;
+}
+
+function obtenerUltimos7DatosAdministradosConSalto(datos)
+{
+    let ultimos7_variaciones_madrid_administradas = [[],[]];//array bidimensional
+    let cuenta_saltos = 0;
+       let pos_actual = datos.length-1;
+
+        
+        for (cuenta_saltos=0; cuenta_saltos<7; cuenta_saltos++)
+        {
+            ultimos7_variaciones_madrid_administradas [0].push (datos[pos_actual][POS_FECHA_INFORME]);
+            ultimos7_variaciones_madrid_administradas [1].push (datos[pos_actual][POS_DOSIS_ADMINISTRADAS]);
+            pos_actual= pos_actual-5;
+        }
+   
+    return ultimos7_variaciones_madrid_administradas;
+}
+
+function obtenerUltimos7DatosInmunizadosConSalto(datos)
+{
+    let ultimos7_variaciones_madrid_inmunizadas = [[],[]];//array bidimensional
+    let cuenta_saltos = 0;
+    let pos_actual = datos.length-1;
+
+        
+        for (cuenta_saltos=0; cuenta_saltos<7; cuenta_saltos++)
+        {
+            ultimos7_variaciones_madrid_inmunizadas [0].push (datos[pos_actual][POS_FECHA_INFORME]);
+            ultimos7_variaciones_madrid_inmunizadas [1].push (datos[pos_actual][POS_PAUTA_COMPLETADA]);
+            pos_actual= pos_actual-5;
+        }
+   
+    return ultimos7_variaciones_madrid_inmunizadas;
+}
+
 function mostrarSeccionMadrid(array_datos_parseado) {
     //---- SLIDE 1 -----  
     let datosMadrid = [];
     datosMadrid = array_datos_parseado.filter(item => item[1].localeCompare('Madrid') == 0);//FILTRAMOS SOLO LOS DATOS DE MADRID
     let ultimos_datos_Madrid = datosMadrid[datosMadrid.length - 1];//OBTENEMOS LOS ÚLTIMOS DATOS DE MADRID
-    let ultimos7_datos_madrid = datosMadrid.slice(datosMadrid.length - 1 - 7, datosMadrid.length);
-    let ultimas7_fechas_Madrid = ultimos7_datos_madrid.map(registro => registro[POS_FECHA_INFORME]);//OBTENEMOS LAS 7 ÚLTIMAS FECHAS DE MADRID   
     muestraDatosVacunaMadridDosPuntoCero(ultimos_datos_Madrid);//mostramos los datos textuales
 
-    dibujarGraficoMadridRecibidas(ultimos7_datos_madrid, ultimas7_fechas_Madrid);
-    dibujarGraficoMadridAdministradas(ultimos7_datos_madrid, ultimas7_fechas_Madrid);
-    dibujarGraficoMadridPautaCompleta(ultimos7_datos_madrid, ultimas7_fechas_Madrid);
+    let ultimos7_variaciones_madrid_entragadas = [[],[]];//array bidimensional
+    ultimos7_variaciones_madrid_entragadas = obtenerUltimos7SaltosDeDosisEntregadas (datosMadrid);
+  
+    let ultimos7_variaciones_madrid_administradas = [[],[]];//array bidimensional
+    ultimos7_variaciones_madrid_administradas = obtenerUltimos7DatosAdministradosConSalto (datosMadrid);
+
+    let ultimos7_variaciones_madrid_inmunizadas = [[],[]];//array bidimensional
+    ultimos7_variaciones_madrid_inmunizadas = obtenerUltimos7DatosInmunizadosConSalto (datosMadrid);
+
+    dibujarGraficoMadridRecibidas2(ultimos7_variaciones_madrid_entragadas[0], ultimos7_variaciones_madrid_entragadas[1]);
+    dibujarGraficoMadridAdministradas2(ultimos7_variaciones_madrid_administradas[0], ultimos7_variaciones_madrid_administradas[1]);
+    dibujarGraficoMadridPautaCompleta2(ultimos7_variaciones_madrid_inmunizadas[0], ultimos7_variaciones_madrid_inmunizadas[1]);
 
 }
 // coge el csv de la pagina de civio para pintar los graficos de datos de vacunacion de Madrid
@@ -133,18 +233,6 @@ function parseCSV(str) {
 
 
 
-const POS_FECHA_INFORME = 0
-const POS_CAM = 1;
-const POS_DOSIS_PFIZER = 2;
-const POS_DOSIS_MODERNA = 3;
-const POS_DOSIS_ASTRAZENECA = 4;
-const POS_DOSIS_JANSSEN = 5;
-const POS_DOSIS_ENTREGADAS = 6;
-const POS_DOSIS_ADMINISTRADAS = 7;
-const POS_PORCENTAJE_SOBRE_ENTREGADAS = 8;
-const POS_PERSONAS_CON_ALMENOS_UNA_DOSIS = 9;
-const POS_PAUTA_COMPLETADA = 10;
-const POS_ULTIMA_VACUNA_REGISTRADA = 11;
 
 //informe,  comunidad autónoma,    dosis Pfizer,    dosis Moderna,   dosis AstraZeneca,  dosis Janssen,   dosis entregadas,dosis administradas,% sobre entregadas,personas con al menos una dosis,personas con pauta completa,última vacuna registrada
 //informe  ,comunidad autónoma    ,dosis Pfizer    ,dosis Moderna,   dosis AstraZeneca,  dosis entregadas,   dosis administradas,   % sobre entregadas,   personas con al menos una dosis,  personas con pauta completa,última vacuna registrada
@@ -200,19 +288,20 @@ function muestraDatosVacunaMadridDosPuntoCero(ultimos_datos_Madrid) {
     let porcenSobreTotalCompletas = document.getElementById("porcenSobreTotalCompletas");
     let fecha = document.getElementById("fechaAct");
     let fechaSlideTres = document.getElementById("fechaActua");
-    //let personasAlMenosUnaDosisMadrid = document.getElementById("personasAlMenosUnaDosisMadrid");
     let porcentajeAlMenosUnaDosisMadrid = document.getElementById("porcentajeAlMenosUnaDosisMadrid");
    
    
-    //personasAlMenosUnaDosisMadrid.innerHTML = personas_con_al_menos_una_dosis;
-    porcentajeAlMenosUnaDosisMadrid.innerHTML = porcentaje_con_al_menos_una_dosis;
+    porcentajeAlMenosUnaDosisMadrid.innerHTML = (new Intl.NumberFormat("es-ES").format(porcentaje_con_al_menos_una_dosis));
+    dosisAdministradasTotal.innerHTML = (new Intl.NumberFormat("es-ES").format(dosis_administradas));
+    dosisDistribuidas.innerHTML = (new Intl.NumberFormat("es-ES").format(dosis_recibidas));
+    
 
-    dosisAdministradasTotal.innerHTML = dosis_administradas;
-   
-    dosisDistribuidas.innerHTML = dosis_recibidas;
-    porcentajeAdministradasTotal.innerHTML = porcentaje_administradas_recibidas;
-    pautaCompleta.innerHTML = personas_pauta_completa;
-    porcenSobreTotalCompletas.innerHTML = porcentaje_poblacion_pauta_completa;
+    console.log ("porcentaje_administradas_recibidas " +porcentaje_administradas_recibidas);
+    let par = Number.parseFloat(porcentaje_administradas_recibidas.substr(0,porcentaje_administradas_recibidas.length-1).replace(',', '.'));
+    console.log ("par " +par);
+    porcentajeAdministradasTotal.innerHTML = (new Intl.NumberFormat("es-ES").format(par));
+    pautaCompleta.innerHTML = (new Intl.NumberFormat("es-ES").format(personas_pauta_completa));
+    porcenSobreTotalCompletas.innerHTML = (new Intl.NumberFormat("es-ES").format(porcentaje_poblacion_pauta_completa));
     console.log("Entregadas = " + dosis_recibidas + " % Entregadas " + porcentaje_recibidas_poblacion + " Administradas " + dosis_administradas + " % Administradas por Población " + porcentaje_recibidas_poblacion + " % Administradas por Recibidas " + porcentaje_administradas_recibidas + " Completa " + personas_pauta_completa + " % Completa " + porcentaje_poblacion_pauta_completa);
    
     fecha.innerHTML = ultimos_datos_Madrid[POS_FECHA_INFORME];
@@ -227,41 +316,74 @@ function muestraDatosVacunaMadridDosPuntoCero(ultimos_datos_Madrid) {
 // oden subarray posicion 0 fecha, posicion 5 dosis entregadas, posicion 6 dosis administradas,
 //posicion 7 % sobre entregadas, posicion 8 pauta completada
 
-function dibujarGraficoMadridRecibidas(ultimos7_datos_madrid, ultimas7_fechas_Madrid) {
 
-
-    let ultimos7_registros_dosis_Entregadas_Madrid = ultimos7_datos_madrid.map(registro => registro[POS_DOSIS_ENTREGADAS]);
+//MEJORAMOS Y SÓLO SE DIBUJAN CON BARRAS LOS SALTOS CUANDO HAY VARIACIÓN
+function dibujarGraficoMadridRecibidas2(ultimas8_fechas_Madrid, ultimas8_dosis_Madrid ) {
 
     let ctx = document.getElementById('myChartMadridEntregadas').getContext('2d');
-
-    dibujarGraficaLinea(ctx, ultimas7_fechas_Madrid, ultimos7_registros_dosis_Entregadas_Madrid, 'rgb(16, 26, 214)', 'Vacunas distribuidas Madrid');
+    dibujargraficaBarrasVertical(ctx, ultimas8_fechas_Madrid.reverse(), ultimas8_dosis_Madrid.reverse(), 'rgb(16, 26, 214)', 'Vacunas distribuidas Madrid');
 
 }
 
-//grafico de dosis administradas Madrid
-function dibujarGraficoMadridAdministradas(ultimos7_datos_madrid, ultimas7_fechas_Madrid) {
+
+function dibujarGraficoMadridAdministradas2(fechas, datos) {
 
 
-    let ultimos7_registros_dosis_Administradas_Madrid = ultimos7_datos_madrid.map(registro => registro[POS_DOSIS_ADMINISTRADAS]);
     let ctx = document.getElementById('myChartMadridAdministradas').getContext('2d');
-
-    dibujarGraficaLinea(ctx, ultimas7_fechas_Madrid, ultimos7_registros_dosis_Administradas_Madrid, 'rgb(226, 83, 3)', 'Vacunas administradas Madrid');
+    dibujarGraficaLinea(ctx, fechas.reverse(), datos.reverse(), 'rgb(226, 83, 3)', 'Vacunas administradas Madrid');
 
 }
 
-//dibuja grafico personas con las dos dosis administrada Madrid
-function dibujarGraficoMadridPautaCompleta(ultimos7_datos_madrid, ultimas7_fechas_Madrid) {
 
-    let ultimos7_registros_dosis_PautaCompleta_Madrid = ultimos7_datos_madrid.map(registro => registro[POS_PAUTA_COMPLETADA]);
+function dibujarGraficoMadridPautaCompleta2(fechas, datos) {
+
 
     let ctx = document.getElementById('myChartMadridCompletadas').getContext('2d');
-
-    dibujarGraficaLinea(ctx, ultimas7_fechas_Madrid, ultimos7_registros_dosis_PautaCompleta_Madrid, 'rgb(83, 225, 162)', 'Vacunas pauta completa Madrid');
+    dibujarGraficaLinea(ctx, fechas.reverse(), datos.reverse(), 'rgb(83, 225, 162)', 'Vacunas pauta completa Madrid');
 }
+
 
 
 // --------------------- SLIDE 2: EVOLUCIÓN ESPAÑA POR FECHA ------------------------------------------//
 
+function mostrarGraficoSaboresVacuna (porcentaje_pfizer, porcentaje_astrazeneca, porcentaje_moderna, porcentaje_jansen)
+{
+    let elemento_canvas_graficoSabores = document.getElementById("graficoSabores").getContext('2d');
+
+   
+
+    const data = {
+        labels: [
+          'Pfizer',
+          'Astrazeneca',
+          'Moderna',
+          'Janssen'
+        ],
+        datasets: [{
+          label: 'My First Dataset',
+          data: [porcentaje_pfizer, porcentaje_astrazeneca, porcentaje_moderna, porcentaje_jansen],
+          backgroundColor: [
+            'rgb(255, 99, 132)',
+            'rgb(54, 162, 235)',
+            'rgb(255, 205, 86)',
+            'rgb( 88, 214, 141)'
+          ],
+          hoverOffset: 5
+        }]
+      };
+
+      const config = {
+        type: 'pie',
+        data: data,
+        options: {
+            responsive: true,
+            aspectRatio: 1.2
+        }
+      };
+
+    var chart = new Chart(elemento_canvas_graficoSabores, config);
+ 
+}
 
 function muestraDatosVacunaEspanaDosPuntoCero(ultimos_datos_Espania) {
 
@@ -276,82 +398,81 @@ function muestraDatosVacunaEspanaDosPuntoCero(ultimos_datos_Espania) {
 
 
     let porcentajeAlMenosUnaDosisEsp = document.getElementById("porcentajeAlMenosUnaDosisEsp");
-    porcentajeAlMenosUnaDosisEsp.innerHTML = porcentaje_con_al_menos_una_dosis_esp;
+    porcentajeAlMenosUnaDosisEsp.innerHTML = (new Intl.NumberFormat("es-ES").format(porcentaje_con_al_menos_una_dosis_esp));
 
     let num_entregadas = document.getElementById("dosis_totales_ES");
     let chart1_texto = document.getElementById("chart1_text");
-
-    //corejimos a 5
-    num_entregadas.innerHTML = entregadas_total;
-    chart1_texto.innerHTML = "<b>" + (total_Pfizer * 100 / entregadas_total).toFixed(2) + "%</b> de Pfizer <br><b>" +
-        (total_Moderna * 100 / entregadas_total).toFixed(2) + "% </b> de Moderna <br><b>" +
-        (total_Astrazenca * 100 / entregadas_total).toFixed(2) + "% </b> de Astrazeneca<br><b>" +
-        (total_Janssen * 100 / entregadas_total).toFixed(2) + "% </b> de Janssen";
-    //document.getElementById("porcentajeDosisEntregadasES").innerHTML= trunc((entregadas_total * 100) / POBLACION_ESPANIA, 3);;
-
+    
+    let porcentaje_pfizer =  (total_Pfizer * 100 / entregadas_total).toFixed(2);
+    let porcentaje_moderna =  (total_Moderna * 100 / entregadas_total).toFixed(2);
+    let porcentaje_astrazeneca =  (total_Astrazenca * 100 / entregadas_total).toFixed(2);
+    let porcentaje_jansen =  (total_Janssen * 100 / entregadas_total).toFixed(2);
+    num_entregadas.innerHTML = (new Intl.NumberFormat("es-ES").format(entregadas_total));
+    chart1_texto.innerHTML = "<b>" + (new Intl.NumberFormat("es-ES").format(porcentaje_pfizer)) + "%</b> de Pfizer <br><b>" +
+    (new Intl.NumberFormat("es-ES").format(porcentaje_moderna)) + "% </b> de Moderna <br><b>" +
+    (new Intl.NumberFormat("es-ES").format(porcentaje_astrazeneca)) + "% </b> de Astrazeneca<br><b>" +
+    (new Intl.NumberFormat("es-ES").format(porcentaje_jansen)) + "% </b> de Janssen";
+    mostrarGraficoSaboresVacuna (porcentaje_pfizer, porcentaje_astrazeneca, porcentaje_moderna, porcentaje_jansen);
 
     let admin_total = ultimos_datos_Espania[POS_DOSIS_ADMINISTRADAS];
-    //correjimos a 6
     let admin_por_total = trunc((admin_total * 100) / POBLACION_ESPANIA, 3);
     let dosis_admin = document.getElementById("dosis_admin_ES");
     let chart2_texto = document.getElementById("chart2_text");
     console.log("admin_total", admin_total);
-    dosis_admin.innerHTML = admin_total;
-    chart2_texto.innerHTML = "El <b>" + (admin_total.replace('.', "") * 100 / entregadas_total).toFixed(2) + "%</b> de vacunas recibidas ya han sido administradas";
-    //document.getElementById("porcentajePoblacionAdministradasES").innerHTML=admin_por_total;
+    dosis_admin.innerHTML =  (new Intl.NumberFormat("es-ES").format(admin_total));
+    let pbae  =  (admin_total.replace('.', "") * 100 / entregadas_total).toFixed(2);
+    chart2_texto.innerHTML = "El <b>" + (new Intl.NumberFormat("es-ES").format(pbae)) + "%</b> de vacunas recibidas ya han sido administradas";
 
 
 
-    //correimos pauta completa es 8 AHORA 9
     let adminx2_total = ultimos_datos_Espania[POS_PAUTA_COMPLETADA];
-    //fallo grave. hay que hacer replaceALl y no replace... si no solo cambia el primer punto y los millones los hace mal
     let adminx2_por_total = trunc((adminx2_total * 100) / POBLACION_ESPANIA, 3);
-    //let adminx2_por_total = trunc(adminx2_total / poblacionEs, 3);
     console.log("porcentaje inmunida2 = " + adminx2_por_total);
 
     let num_adminx2 = document.getElementById("pauta_comp_ES");
-    // let chart3_texto = document.getElementById("chart3_text");
     console.log("pauta_comp", adminx2_total);
-    num_adminx2.innerHTML = adminx2_total;
-    // chart3_texto.innerHTML = "<b>" + adminx2_por_total + "%</b> de la población";
-    document.getElementById("porcentajePoblacionInmuneES").innerHTML = trunc((adminx2_total * 100) / POBLACION_ESPANIA, 3);
+    num_adminx2.innerHTML = (new Intl.NumberFormat("es-ES").format(adminx2_total));
+    document.getElementById("porcentajePoblacionInmuneES").innerHTML = (new Intl.NumberFormat("es-ES").format(trunc((adminx2_total * 100) / POBLACION_ESPANIA, 2)));
 
-    /*chart3_texto.innerHTML = "En España ya hay <b>" + adminx2_total +
-    "</b> personas con la pauta completa administrada.<br>Esto es el <b>" + adminx2_por_total + "%</b> de la población."*/
     let fecha = document.getElementById("fechaActu");
     fecha.innerHTML = ultimos_datos_Espania[POS_FECHA_INFORME];
 
 
 }
 
-//grafico de dosis administradas España
-function dibujarGraficoDosisEntregadasEspana(ultimos7_datos_Espania, ultimas7_fechas_Espania) {
 
-    let ultimos7_registros_dosis_Entregadas_Espania = ultimos7_datos_Espania.map(registro => registro[POS_DOSIS_ENTREGADAS]);
+
+function dibujarGraficoDosisEntregadasEspana2(fechas, datos) {
+
+   // let ultimos7_registros_dosis_Entregadas_Espania = ultimos7_datos_Espania.map(registro => registro[POS_DOSIS_ENTREGADAS]);
     let ctx = document.getElementById('myChart').getContext('2d');
 
-    dibujarGraficaLinea(ctx, ultimas7_fechas_Espania, ultimos7_registros_dosis_Entregadas_Espania, 'rgb(16, 26, 214)', 'Vacunas distribuidas España');
+    dibujargraficaBarrasVertical (ctx, fechas.reverse(), datos.reverse(), 'rgb(16, 26, 214)', 'Vacunas distribuidas España');
+    //dibujargraficaBarrasVertical
 }
 
-function dibujarGraficoDosisAdministradasEspana(ultimos7_datos_Espania, ultimas7_fechas_Espania) {
 
 
-    let ultimos7_registros_dosis_Administradas_Espania = ultimos7_datos_Espania.map(registro => registro[POS_DOSIS_ADMINISTRADAS]);
+function dibujarGraficoDosisAdministradasEspana2(fechas, datos) {
+
+
+   // let ultimos7_registros_dosis_Administradas_Espania = ultimos7_datos_Espania.map(registro => registro[POS_DOSIS_ADMINISTRADAS]);
     let ctx = document.getElementById('myChartAdministradas').getContext('2d');
 
-    dibujarGraficaLinea(ctx, ultimas7_fechas_Espania, ultimos7_registros_dosis_Administradas_Espania, 'rgb(226, 83, 3)', 'Vacunas administradas España');
+    dibujarGraficaLinea(ctx, fechas.reverse(), datos.reverse(), 'rgb(226, 83, 3)', 'Vacunas administradas España');
 
 }
 
-function dibujarGraficoInmunesEspana(ultimos7_datos_Espania, ultimas7_fechas_Espania) {
 
-    let ultimos7_registros_dosis_PautaCompleta_Espania = ultimos7_datos_Espania.map(registro => registro[POS_PAUTA_COMPLETADA]);
+
+function dibujarGraficoInmunesEspana2(fechas, datos) {
+
+    //let ultimos7_registros_dosis_PautaCompleta_Espania = ultimos7_datos_Espania.map(registro => registro[POS_PAUTA_COMPLETADA]);
     let ctx = document.getElementById('myChartCompletada').getContext('2d');
 
-    dibujarGraficaLinea(ctx, ultimas7_fechas_Espania, ultimos7_registros_dosis_PautaCompleta_Espania, 'rgb(83, 225, 162)', 'Vacunas pauta completa España');
+    dibujarGraficaLinea(ctx, fechas.reverse(), datos.reverse(), 'rgb(83, 225, 162)', 'Vacunas pauta completa España');
 
 }
-
 
 // --------------------- SLIDE 3: ÚLTIMOS DATOS POR CCAA ---------------------------------//
 
@@ -404,7 +525,7 @@ function mostrarSeccionCCAA(datos) {
     // Datos para la gráfica (ctx, ejeX, ejeY, color, leyenda) 
 
     let ctx3 = document.getElementById("chart3").getContext('2d');
-    dibujargraficaBarras(ctx3, ccaa, dosis_adminx2, 'rgb(83, 225, 162)', "Vacunas pauta completa por CCAA");
+    dibujargraficaBarras(ctx3, ccaa, dosis_adminx2, 'rgb(83, 225, 162)', "Personas pauta completa por CCAA");
 }
 
 
@@ -437,14 +558,16 @@ function dibujarGraficaLinea(ctx, ejeX, ejeY, color, leyenda) {
             }]
         },
 
-        // Configuration options go here
         options: {
             responsive: true,
-            //aspectRatio: 1,
+            aspectRatio: 1,
             scales: {
                 yAxes: [{
                     ticks: {
-                        beginAtZero: true
+                        beginAtZero: true,
+                        userCallback: function(value, index, values) {
+                            return value.toLocaleString();   // this is all we need
+                        }
                     }
                 }]
             }
@@ -459,10 +582,39 @@ function dibujargraficaBarras(ctx, ejeX, ejeY, color, leyenda) {
 
     //OBTENERLOS DATOS
     var chart = new Chart(ctx, {
-        // The type of chart we want to create
         type: 'horizontalBar',
 
-        // The data for our dataset
+        data: {
+            labels: ejeX,
+            datasets: [{
+                label: leyenda,
+                barThickness: 2,
+                backgroundColor: color,
+                borderColor: 'rgb(255, 255, 255)',
+                data: ejeY
+            }]
+        },
+        options: {
+            responsive: true,
+            aspectRatio: 1,
+            scales: {
+                xAxes: [{
+                    ticks: {
+                        beginAtZero: true
+                    }
+                }]
+            }
+        }
+    })
+}
+
+
+function dibujargraficaBarrasVertical(ctx, ejeX, ejeY, color, leyenda) {
+
+    //OBTENERLOS DATOS
+    var chart = new Chart(ctx, {
+        type: 'bar',
+
         data: {
             labels: ejeX,
             datasets: [{
@@ -476,13 +628,23 @@ function dibujargraficaBarras(ctx, ejeX, ejeY, color, leyenda) {
 
         options: {
             responsive: true,
-            aspectRatio: 1,
+            aspectRatio: 1,//más pequeño, más grande se ve
             scales: {
                 xAxes: [{
                     ticks: {
                         beginAtZero: true
                     }
-                }]
+                }],
+                yAxes: [
+                    {
+                        ticks: {
+                            beginAtZero: true,
+                            userCallback: function(value, index, values) {
+                                return value.toLocaleString();   // this is all we need
+                            }
+                        }
+                    }
+                ]
             }
         }
     })
