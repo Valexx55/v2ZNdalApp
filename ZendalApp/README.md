@@ -42,6 +42,12 @@ para ejecutarlo en el móvil o bien abrir un html en el navegador del ordenador
     Actualizadas con estadísticas de la nueva vacuna Jannsen
     Cambio de icono
     
+1.0.6 ABRIL 2021 tarta
+
+    Mejora visual de estadísticas: se ven la distribución cuando hay saltos, se espacia el intervalo de inmunidad y administración
+    Se añade gráfico de tarta en las distintos fabricantes de vacunas
+    Se modifica el tamaño de los gráficos para mejor visualización (más alto)
+    Mejora visual de iconos en versiones <8
 
 
 ### MEJORAS PENDIENTES / FALLOS CONOCIDOS 🔩
