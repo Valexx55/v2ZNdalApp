@@ -43,6 +43,7 @@ para ejecutarlo en el móvil o bien abrir un html en el navegador del ordenador
     Cambio de icono
     
 1.0.6 MAYO 2021 tarta
+1.0.7 MAYO 2021 tarta1
 
     Mejora visual de estadísticas: se ven la distribución cuando hay saltos, se espacia el intervalo de inmunidad y administración
     Se añade gráfico de tarta en las distintos fabricantes de vacunas
