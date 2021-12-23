@@ -26,7 +26,7 @@ document.addEventListener('deviceready', onDeviceReady, false);
 function onDeviceReady() {
     // Cordova is now initialized. Have fun!
 
-    //alert("dispo iniciado");
+    //alert("dispo iniciado");º
     document.addEventListener("backbutton", botonHaciaAtras, false);
     //alert("atrás programado");
 

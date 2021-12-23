@@ -24,6 +24,7 @@ const POS_PORCENTAJE_SOBRE_ENTREGADAS = 8;
 const POS_PERSONAS_CON_ALMENOS_UNA_DOSIS = 9;
 const POS_PAUTA_COMPLETADA = 10;
 const POS_ULTIMA_VACUNA_REGISTRADA = 11;
+const NUMERO_CCAA_VACUNA = 21;
 
 
 
@@ -537,7 +538,8 @@ function mostrarSeccionCCAA(datos) {
     let dosis_adminx2 = [];
     let dosis_por_admin = [];
 
-    for (let i = (datos.length - 20); i < datos.length; i++) {
+   // for (let i = (datos.length - 20); i < datos.length; i++) {
+    for (let i = (datos.length - NUMERO_CCAA_VACUNA); i < datos.length; i++) {
         ccaa.push(datos[i][POS_CAM]);
         dosis_admin.push(Number.parseInt(datos[i][POS_DOSIS_ADMINISTRADAS]));
         dosis_entregadas.push(Number.parseInt(datos[i][POS_DOSIS_ENTREGADAS]));
@@ -691,4 +693,9 @@ function dibujargraficaBarrasVertical(ctx, ejeX, ejeY, color, leyenda) {
             }
         }
     })
+}
+
+function vistaAutocita ()
+{
+    window.open("https://autocitavacuna.sanidadmadrid.org/ohcitacovid/", "_blank");
 }

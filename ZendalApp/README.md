@@ -50,6 +50,12 @@ para ejecutarlo en el móvil o bien abrir un html en el navegador del ordenador
     Se modifica el tamaño de los gráficos para mejor visualización (más alto)
     Mejora visual de iconos en versiones <8
 
+1.0.8 MAYO 2021 ultij
+1.0.9 JUNIO 2021 autocita
+
+    Adaptación a nuevos datos por el reporte de Sanidad Exterior y Fuerzas Armadas como nueva CCAA
+    Inclusión de botón de autocita en la sección de vacunación de Madrid
+
 
 ### MEJORAS PENDIENTES / FALLOS CONOCIDOS 🔩
 
