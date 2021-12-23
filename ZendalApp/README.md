@@ -55,6 +55,11 @@ para ejecutarlo en el móvil o bien abrir un html en el navegador del ordenador
 
     Adaptación a nuevos datos por el reporte de Sanidad Exterior y Fuerzas Armadas como nueva CCAA
     Inclusión de botón de autocita en la sección de vacunación de Madrid
+    
+1.1.0 DICIEMBRE 2021 ignore
+
+    Eliminación sección de mapa restricciones movilidad (mapa 1 inicial )
+    Ignorando datos de vacunacion de niños, 3as dosis, etc.
 
 
 ### MEJORAS PENDIENTES / FALLOS CONOCIDOS 🔩
